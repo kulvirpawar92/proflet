@@ -1,0 +1,285 @@
+# Proflet — Project Summary
+
+## What is Proflet?
+A property portfolio CRM SaaS app for UK landlords with 1-5 properties.
+Helps them track rent, mortgages, expenses, maintenance, and profitability.
+Replaces spreadsheets with a clean, simple web app.
+
+## Business model
+- £19/year (changed from monthly — simpler, impulse buy price point)
+- No free trial — pay upfront, cancel anytime
+- Target customer: solo UK landlords with 1-5 properties
+
+## Brand
+- Name: Proflet (profit + let)
+- Colours: #173404 (dark forest), #3B6D11 (mid green), #639922 (bright green)
+- Font: Georgia, serif
+- Logo: rising bar chart mark + "prof" in mid green + "let" in bright green
+- Tagline: "Stop managing your properties on spreadsheets"
+- Domain: proflet.com (NOT .co.uk — important!)
+
+## Tech stack
+- Frontend: React (Vite) — runs locally at localhost:5173
+- Backend/database: Supabase (Postgres)
+- Auth: Supabase Auth (email/password)
+- Payments: Stripe (integrated, test mode)
+- Hosting: Vercel (NOT YET DEPLOYED)
+- Domain: proflet.com (bought at 123-reg, NOT yet connected)
+
+## Supabase project
+- Project name: Proflet
+- URL: https://wjjqgzyjubvhxivlqnxq.supabase.co
+- Region: West EU (Ireland)
+- Tables: properties, income, expenses, cases, tasks, contacts, subscriptions
+- Row level security: enabled on all tables
+- Note: Project pauses after 7 days inactivity on free tier — click Resume if needed
+
+## Additional Supabase columns added
+- cases: type (text), contact_id (uuid → contacts)
+- tasks: type (text), reminder_date (date), case_id (uuid → cases)
+- contacts: address (text)
+
+## Supabase Edge Functions deployed
+1. `generate-monthly-records` — auto-generates rent income + recurring expenses on 1st of month
+   - JWT verification: OFF
+   - Cron: `0 6 1 * *`
+2. `ai-chat` — secure proxy to Anthropic API for AI Portfolio Advisor
+   - JWT verification: OFF
+   - Secret: ANTHROPIC_KEY stored in Supabase secrets
+3. `create-checkout-session` — creates Stripe checkout session
+   - JWT verification: OFF
+   - Secrets: STRIPE_SECRET_KEY, STRIPE_PRICE_ID
+4. `stripe-webhook` — handles Stripe webhook events, updates subscriptions table
+   - JWT verification: OFF
+   - Secret: STRIPE_WEBHOOK_SECRET
+
+## Supabase secrets stored
+- ANTHROPIC_KEY — Anthropic API key for AI chat
+- STRIPE_SECRET_KEY — Stripe secret key (sk_test_...)
+- STRIPE_PRICE_ID — Stripe price ID (price_...)
+- STRIPE_WEBHOOK_SECRET — Stripe webhook signing secret (whsec_...)
+
+## Stripe setup
+- Account created, test mode
+- Product: "Proflet yearly subscription" — £19/year
+- Webhook destination created pointing to Supabase stripe-webhook function
+- Webhook events: checkout.session.completed, customer.subscription.created,
+  customer.subscription.deleted, customer.subscription.paused,
+  customer.subscription.updated
+- Publishable key stored in .env as VITE_STRIPE_PUBLISHABLE_KEY
+
+## Subscriptions table
+```sql
+create table subscriptions (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users(id) on delete cascade not null unique,
+  stripe_customer_id text,
+  stripe_subscription_id text,
+  status text default 'inactive',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+```
+- RLS enabled
+- Your account (kulv123@hotmail.com) manually set to active with status='active'
+- To give any user free access: insert row with their user_id and status='active'
+
+## File structure
+```
+proflet/
+├── src/
+│   ├── components/
+│   │   ├── Auth.jsx         — login/signup, no trial messaging, £19/year copy
+│   │   ├── Dashboard.jsx    — main app shell, nav, all charts, AI chat, generate button
+│   │   ├── Properties.jsx   — redesigned via claude.ai/design
+│   │   ├── Income.jsx       — redesigned, export CSV, import CSV with template
+│   │   ├── Expenses.jsx     — redesigned, export CSV, import CSV with template
+│   │   ├── Cases.jsx        — cases tracker with type/contact/property filters
+│   │   ├── Tasks.jsx        — tasks with reminder, linked case, type filters
+│   │   ├── Contacts.jsx     — contacts with edit, address, type colours
+│   │   ├── Landing.jsx      — sophisticated marketing landing page
+│   │   ├── Paywall.jsx      — payment page shown after signup, £19/year CTA
+│   │   ├── Success.jsx      — post-payment confirmation, verifies webhook, redirects to app
+│   │   └── AIChat.jsx       — floating AI chat widget, calls ai-chat Edge Function
+│   ├── App.jsx              — Landing → Auth → Paywall → Dashboard flow
+│   ├── supabase.js
+│   ├── main.jsx
+│   └── index.css
+├── .env                     — VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_STRIPE_PUBLISHABLE_KEY
+├── PROJECT.md
+├── package.json
+└── vite.config.js
+```
+
+## App flow
+```
+Visit proflet.com
+  → Landing page
+  → Click Get Started
+  → Auth (login/signup)
+  → After login, App.jsx checks subscriptions table
+  → No active subscription → Paywall (£19/year button)
+  → Click pay → Stripe checkout → stripe-webhook fires → subscriptions updated
+  → Success.jsx verifies payment → redirects to Dashboard
+  → Active subscription → Dashboard (full app)
+```
+
+## Packages installed
+- react + vite
+- @supabase/supabase-js
+- react-router-dom
+- recharts
+- @stripe/stripe-js
+
+## What's been built ✅
+
+### Core app
+- Full React app with 7 screens — Dashboard, Properties, Income, Expenses, Cases, Tasks, Contacts
+- Supabase database, all tables, RLS, auth
+- All CRUD on all pages
+- Dark mode fixes — all inputs have colorScheme: light
+- Consistent modal patterns (× top right + Cancel bottom left)
+
+### Dashboard
+- 8 metric cards, period selector (3M/6M/12M/YTD)
+- Monthly income vs expenses chart
+- Monthly profit trend chart
+- Profit by property (chart + detail toggle)
+- Equity & mortgage per property (release + breakdown toggle)
+- 3-month cash flow forecast
+- Portfolio health score (vacant, high cases, overdue tasks, overdue rent, insurance, remortgage, tenancy, LTV)
+- Alerts & reminders section
+- "⟳ Generate this month" button
+- AI chat floating button (bottom right)
+
+### Properties
+- Redesigned via claude.ai/design
+- Property cards with LTV bar, yield, occupancy/status badges
+- Detail page with 4 tabs
+- Add/edit form with 4 tabs
+
+### Income
+- Redesigned via claude.ai/design (CSS class approach, --pl-* variables)
+- Export CSV (all records, date sorted)
+- Import CSV (download template with property names, upload, validate, preview, bulk insert)
+- Inline status update
+
+### Expenses
+- Redesigned via claude.ai/design (CSS class approach, pf-expenses class)
+- Export CSV
+- Import CSV (same flow as income, recurring column accepts yes/no)
+- Edit + Delete
+
+### Cases, Tasks, Contacts
+- Full functionality, all filters working
+- Redesign pending (claude.ai/design limit reached)
+
+### Landing page
+- Sophisticated design from claude.ai/design
+- Hero, pain points, features, how it works, pricing (£19/year), FAQ, CTA
+- Updated to mention AI Portfolio Advisor feature
+
+### Auth
+- No trial messaging — £19/year copy throughout
+- "Create account" button (not "Start free trial")
+- Back button to landing
+
+### Payments (Stripe)
+- Paywall.jsx — shown after login if no active subscription
+- Success.jsx — post-payment verification page
+- App.jsx — checks subscriptions table, routes accordingly
+- create-checkout-session Edge Function
+- stripe-webhook Edge Function
+- subscriptions table in Supabase
+- Your account manually activated
+
+### AI Chat
+- AIChat.jsx floating widget on every page
+- Calls ai-chat Supabase Edge Function
+- Full portfolio context passed to API
+- Suggestion chips, conversation history
+- Needs Anthropic credits to work ($20 recommended)
+
+### Recurring generation
+- generate-monthly-records Edge Function
+- Cron job: 1st of every month at 6am
+- Checks occupancy_status = 'Occupied' for rent
+- Generates recurring expenses automatically
+
+## Design system
+- Landing page + Income + Expenses use CSS class approach with --pl-* CSS variables
+- Dashboard + Properties use inline styles with C object
+- Cases + Tasks + Contacts use original inline styles (redesign pending)
+- All use Georgia serif + ui-monospace pairing
+- Light/dark mode via prefers-color-scheme
+
+## Email setup (IN PROGRESS)
+- Domain: proflet.com at 123-reg
+- Zoho Mail setup started
+- TXT verification record added and verified
+- MX records need adding to 123-reg:
+  - mx.zoho.eu priority 10
+  - mx2.zoho.eu priority 20
+  - mx3.zoho.eu priority 50
+- Emails to create: hello@proflet.com, demo@proflet.com
+
+## COMPLETED ✅
+- Full app with all 7 pages
+- Supabase database, auth, RLS
+- Recurring income/expense Edge Function + cron
+- AI chat widget + Edge Function
+- Landing page designed and wired up
+- Dashboard redesigned via claude.ai/design
+- Properties redesigned via claude.ai/design
+- Income redesigned + CSV export + CSV import
+- Expenses redesigned + CSV export + CSV import
+- Stripe payments — full webhook flow, paywall, success page
+- Auth updated — no trial messaging
+- Your account manually activated in subscriptions
+
+## PENDING — Next steps in priority order
+1. **Finish testing Stripe** — test full payment flow with test user + 4242 card
+2. **Deploy to Vercel** — push to GitHub, connect to Vercel, add env vars
+3. **Connect proflet.com** — DNS in 123-reg pointing to Vercel
+4. **Switch Stripe to live mode** — update webhook URLs, swap test keys for live keys
+5. **Complete Zoho email setup** — add MX records, create hello@proflet.com
+6. **Mobile responsive** — all pages collapse on small screens, bottom tab nav
+7. **PWA** — manifest.json + service worker (~1-2 hours)
+8. **Demo account data** — SQL inserts for realistic demo (3 properties, 12 months history)
+9. **App redesign** — Cases, Tasks, Contacts still need claude.ai/design treatment
+10. **Add Anthropic credits** ($20) — so AI chat works
+11. **CSV import for Properties** (post-launch)
+12. **PDF P&L export** (post-launch)
+13. **AI monthly summary** (post-launch)
+
+## Deployment steps (when ready)
+```bash
+cd proflet
+brew install gh
+gh auth login
+gh repo create proflet --public --source=. --push
+# Connect GitHub repo to Vercel at vercel.com
+# Add env vars in Vercel: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_STRIPE_PUBLISHABLE_KEY
+# Supabase secrets already configured
+```
+
+## Going live checklist
+- [ ] Test Stripe payment end to end with test card
+- [ ] Deploy to Vercel
+- [ ] Connect proflet.com domain
+- [ ] Switch Stripe to live mode (new keys, new webhook)
+- [ ] Set up hello@proflet.com in Zoho
+- [ ] Create demo account with realistic data
+- [ ] Test full user journey on live site
+
+## How to run locally
+```bash
+cd proflet
+npm run dev
+# open http://localhost:5173
+```
+
+## How to continue in a new chat
+Paste this PROJECT.md and say:
+"Here is my Proflet project summary. I want to continue building.
+Today I want to: [describe what you want to do]"
