@@ -5,6 +5,7 @@ import Dashboard from './components/Dashboard'
 import Landing from './components/Landing'
 import Paywall from './components/Paywall'
 import Success from './components/Success'
+import ResetPassword from './components/ResetPassword'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -15,9 +16,17 @@ export default function App() {
   const [page, setPage] = useState('landing')
 
   useEffect(() => {
-    // Check for Stripe success redirect
     const path = window.location.pathname
     const search = window.location.search
+
+    // Check for reset password page
+    if (path === '/reset-password') {
+      setPage('reset-password')
+      setLoading(false)
+      return
+    }
+
+    // Check for Stripe success redirect
     if (path === '/success' || search.includes('session_id')) {
       setPage('success')
       setLoading(false)
@@ -56,6 +65,9 @@ export default function App() {
       Loading Proflet...
     </div>
   )
+
+  // Reset password page
+  if (page === 'reset-password') return <ResetPassword />
 
   // Stripe success redirect
   if (page === 'success') return <Success />
