@@ -12,10 +12,6 @@ import {
   ResponsiveContainer, LineChart, Line, Legend, ComposedChart, Area
 } from 'recharts'
 
-/* ──────────────────────────────────────────────────────────────────────── */
-/*  Helpers                                                                  */
-/* ──────────────────────────────────────────────────────────────────────── */
-
 function fmt(n) { return '£' + Math.round(n || 0).toLocaleString() }
 
 function fmtDays(d) {
@@ -33,10 +29,6 @@ const PERIODS = [
   { label: '12M', months: 12 },
   { label: 'YTD', months: null },
 ]
-
-/* ──────────────────────────────────────────────────────────────────────── */
-/*  Reusable bits                                                            */
-/* ──────────────────────────────────────────────────────────────────────── */
 
 function Wordmark({ size = 28 }) {
   const h = size
@@ -94,10 +86,6 @@ function Segment({ options, current, onChange }) {
     </div>
   )
 }
-
-/* ──────────────────────────────────────────────────────────────────────── */
-/*  Dashboard                                                                */
-/* ──────────────────────────────────────────────────────────────────────── */
 
 export default function Dashboard({ session }) {
   const [page, setPage] = useState('dashboard')
@@ -165,14 +153,11 @@ export default function Dashboard({ session }) {
     const val = p.current_value || 0
     const mort = p.mortgage_balance || 0
     const rent = p.monthly_rent || 0
-
-    // Only sum recurring expenses from the current month
     const now = new Date()
     const currentKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
     const mExp = expenses
       .filter(e => e.property_id === p.id && e.recurring && e.date && e.date.startsWith(currentKey))
       .reduce((s, e) => s + (e.amount || 0), 0)
-
     const equity = val - mort
     const ltv = val ? Math.round(mort / val * 100) : 0
     const equityRelease = Math.max(0, (val * 0.75) - mort)
@@ -345,13 +330,12 @@ export default function Dashboard({ session }) {
   }
 
   const C = {
-    mid: '#3B6D11',
-    bright: '#639922',
-    light: '#EAF3DE',
-    lightBorder: '#C8E6A0',
-    red: '#C0392B',
-    border: '#e8e8e8',
-    muted: '#6b7066',
+    mid: '#6FAD2A',
+    bright: '#8FCB3C',
+    light: 'oklch(28% 0.040 130)',
+    lightBorder: 'oklch(34% 0.050 130)',
+    border: 'oklch(28% 0.020 145)',
+    muted: 'oklch(65% 0.018 130)',
   }
 
   const navItems = ['dashboard', 'properties', 'income', 'expenses', 'cases', 'tasks', 'contacts']
@@ -422,40 +406,16 @@ export default function Dashboard({ session }) {
             </div>
 
             <div className="pf-metric-grid">
-              <MetricCard
-                label="Portfolio value"
-                value={fmt(totals.val)}
-                sub={`${props.length} propert${props.length === 1 ? 'y' : 'ies'}`}
-              />
-              <MetricCard
-                label="Total equity"
-                value={fmt(totals.equity)}
-                sub={`Avg LTV ${totals.val ? Math.round(totals.mort / totals.val * 100) : 0}%`}
-              />
-              <MetricCard
-                label="Net monthly profit"
-                value={fmt(totals.profit)}
-                sub={`${fmt(totals.profit * 12)} per year`}
-                accent="mid"
-                highlight
-                deltaUp
-              />
-              <MetricCard
-                label="Avg gross yield"
-                value={avgYield + '%'}
-                sub="Annual rent / value"
-                accent={parseFloat(avgYield) >= 5 ? 'mid' : 'amber'}
-              />
+              <MetricCard label="Portfolio value" value={fmt(totals.val)} sub={`${props.length} propert${props.length === 1 ? 'y' : 'ies'}`} />
+              <MetricCard label="Total equity" value={fmt(totals.equity)} sub={`Avg LTV ${totals.val ? Math.round(totals.mort / totals.val * 100) : 0}%`} />
+              <MetricCard label="Net monthly profit" value={fmt(totals.profit)} sub={`${fmt(totals.profit * 12)} per year`} accent="mid" highlight deltaUp />
+              <MetricCard label="Avg gross yield" value={avgYield + '%'} sub="Annual rent / value" accent={parseFloat(avgYield) >= 5 ? 'mid' : 'amber'} />
             </div>
 
             <div className="pf-metric-grid pf-metric-grid-2">
               <MetricCard label="Monthly rent" value={fmt(totals.rent)} />
               <MetricCard label="Monthly costs" value={fmt(totals.exp)} />
-              <MetricCard
-                label="Mortgage debt"
-                value={fmt(totals.mort)}
-                sub={`${totals.val ? Math.round(totals.mort / totals.val * 100) : 0}% LTV`}
-              />
+              <MetricCard label="Mortgage debt" value={fmt(totals.mort)} sub={`${totals.val ? Math.round(totals.mort / totals.val * 100) : 0}% LTV`} />
               {health !== null && (
                 <div className="pf-metric pf-metric-health">
                   <div className="pf-metric-label">Portfolio health</div>
@@ -508,15 +468,9 @@ export default function Dashboard({ session }) {
             <div className="pf-grid-2">
               <Card>
                 <SectionTitle action={
-                  <Segment
-                    current={profitView}
-                    onChange={setProfitView}
-                    options={[{ value: 'chart', label: 'Chart' }, { value: 'detail', label: 'Detail' }]}
-                  />
+                  <Segment current={profitView} onChange={setProfitView} options={[{ value: 'chart', label: 'Chart' }, { value: 'detail', label: 'Detail' }]} />
                 }>Profit by property</SectionTitle>
-                {!props.length ? (
-                  <EmptyState>No properties yet</EmptyState>
-                ) : profitView === 'chart' ? (
+                {!props.length ? <EmptyState>No properties yet</EmptyState> : profitView === 'chart' ? (
                   <ResponsiveContainer width="100%" height={220}>
                     <BarChart data={propProfitData} layout="vertical" barSize={18}>
                       <CartesianGrid strokeDasharray="3 3" stroke={C.border} horizontal={false} />
@@ -528,9 +482,7 @@ export default function Dashboard({ session }) {
                   </ResponsiveContainer>
                 ) : (
                   <div className="pf-table">
-                    <div className="pf-table-head">
-                      <span>Property</span><span>Rent</span><span>Costs</span><span>Profit</span>
-                    </div>
+                    <div className="pf-table-head"><span>Property</span><span>Rent</span><span>Costs</span><span>Profit</span></div>
                     {props.map(p => {
                       const c = calcProp(p)
                       return (
@@ -557,15 +509,9 @@ export default function Dashboard({ session }) {
 
               <Card>
                 <SectionTitle action={
-                  <Segment
-                    current={equityView}
-                    onChange={setEquityView}
-                    options={[{ value: 'release', label: 'Release' }, { value: 'breakdown', label: 'Breakdown' }]}
-                  />
+                  <Segment current={equityView} onChange={setEquityView} options={[{ value: 'release', label: 'Release' }, { value: 'breakdown', label: 'Breakdown' }]} />
                 }>Equity & mortgage per property</SectionTitle>
-                {!props.length ? (
-                  <EmptyState>No properties yet</EmptyState>
-                ) : equityView === 'release' ? (
+                {!props.length ? <EmptyState>No properties yet</EmptyState> : equityView === 'release' ? (
                   <ResponsiveContainer width="100%" height={220}>
                     <BarChart data={equityChartData} layout="vertical" barSize={18}>
                       <CartesianGrid strokeDasharray="3 3" stroke={C.border} horizontal={false} />
@@ -579,9 +525,7 @@ export default function Dashboard({ session }) {
                   </ResponsiveContainer>
                 ) : (
                   <div className="pf-table">
-                    <div className="pf-table-head">
-                      <span>Property</span><span>Value</span><span>Mortgage</span><span>LTV</span>
-                    </div>
+                    <div className="pf-table-head"><span>Property</span><span>Value</span><span>Mortgage</span><span>LTV</span></div>
                     {props.map(p => {
                       const c = calcProp(p)
                       const ltvTone = c.ltv > 75 ? 'red' : c.ltv > 65 ? 'amber' : 'mid'
@@ -605,9 +549,7 @@ export default function Dashboard({ session }) {
             <div className="pf-grid-2">
               <Card className="pf-card-alerts">
                 <SectionTitle>Alerts & reminders</SectionTitle>
-                <div className="pf-alerts-caption">
-                  Vacant · Insurance (45d) · Remortgage (90d) · Tenancy (60d) · Overdue tasks · Overdue rent
-                </div>
+                <div className="pf-alerts-caption">Vacant · Insurance (45d) · Remortgage (90d) · Tenancy (60d) · Overdue tasks · Overdue rent</div>
                 {!alerts.length ? (
                   <div className="pf-alerts-clear">
                     <div className="pf-alerts-clear-icon">
@@ -664,15 +606,7 @@ export default function Dashboard({ session }) {
         {page === 'contacts'   && <Contacts   {...sharedProps} />}
       </div>
 
-      <AIChat
-        props={props}
-        income={income}
-        expenses={expenses}
-        cases={cases}
-        tasks={tasks}
-        contacts={contacts}
-        session={session}
-      />
+      <AIChat props={props} income={income} expenses={expenses} cases={cases} tasks={tasks} contacts={contacts} session={session} />
     </div>
   )
 }
@@ -696,73 +630,10 @@ function DashStyles() {
     <style>{`
 .proflet-app {
   --pl-dark:    #173404;
-  --pl-mid:     #3B6D11;
-  --pl-bright:  #639922;
-  --pl-light:   #EAF3DE;
-  --pl-light-b: #C8E6A0;
-  --pl-bg:      oklch(98.5% 0.005 110);
-  --pl-bg-2:    #ffffff;
-  --pl-bg-3:    oklch(96.5% 0.012 120);
-  --pl-surface: #ffffff;
-  --pl-text:    oklch(20% 0.015 145);
-  --pl-text-2:  oklch(38% 0.012 145);
-  --pl-muted:   oklch(52% 0.010 140);
-  --pl-border:  oklch(92% 0.008 130);
-  --pl-border-2:oklch(88% 0.012 130);
-  --pl-shadow-1: 0 1px 2px rgba(20,40,10,.04), 0 4px 18px -8px rgba(20,40,10,.10);
-  --pl-shadow-2: 0 2px 6px rgba(20,40,10,.06), 0 18px 60px -20px rgba(20,40,10,.18);
-  --pl-amber:   #B45309;
-  --pl-amber-b: #FDE68A;
-  --pl-amber-bg: #FEF3C7;
-  --pl-red:     #B91C1C;
-  --pl-red-b:   #FECACA;
-  --pl-red-bg:  #FEE2E2;
-  --pl-blue:    #1D4ED8;
-  --pl-blue-bg: #DBEAFE;
-  --pl-blue-b:  #BFDBFE;
-  --pl-r-sm: 8px;
-  --pl-r-md: 12px;
-  --pl-r-lg: 18px;
-  --pl-r-xl: 24px;
-  font-family: Georgia, 'Times New Roman', serif;
-  color: var(--pl-text);
-  background: var(--pl-bg);
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-  font-feature-settings: "kern", "liga";
-}
-
-@media (prefers-color-scheme: dark) {
-  .proflet-app {
-    --pl-bg:      oklch(16% 0.020 145);
-    --pl-bg-2:    oklch(19% 0.022 145);
-    --pl-bg-3:    oklch(14% 0.018 145);
-    --pl-surface: oklch(22% 0.022 145);
-    --pl-text:    oklch(96% 0.012 110);
-    --pl-text-2:  oklch(82% 0.015 120);
-    --pl-muted:   oklch(65% 0.018 130);
-    --pl-border:  oklch(28% 0.020 145);
-    --pl-border-2:oklch(34% 0.022 145);
-    --pl-bright:  #8FCB3C;
-    --pl-mid:     #6FAD2A;
-    --pl-light:   oklch(28% 0.040 130);
-    --pl-light-b: oklch(34% 0.050 130);
-    --pl-shadow-1: 0 1px 2px rgba(0,0,0,.4), 0 4px 18px -8px rgba(0,0,0,.5);
-    --pl-shadow-2: 0 2px 6px rgba(0,0,0,.4), 0 18px 60px -20px rgba(0,0,0,.6);
-    --pl-amber:   #FCD34D;
-    --pl-amber-bg: oklch(28% 0.08 70);
-    --pl-amber-b: oklch(40% 0.10 70);
-    --pl-red:     #FCA5A5;
-    --pl-red-bg:  oklch(28% 0.08 30);
-    --pl-red-b:   oklch(40% 0.12 30);
-    --pl-blue:    #93C5FD;
-    --pl-blue-bg: oklch(28% 0.06 240);
-    --pl-blue-b:  oklch(40% 0.10 240);
-  }
-}
-
-.proflet-app[data-theme="dark"] {
+  --pl-mid:     #6FAD2A;
+  --pl-bright:  #8FCB3C;
+  --pl-light:   oklch(28% 0.040 130);
+  --pl-light-b: oklch(34% 0.050 130);
   --pl-bg:      oklch(16% 0.020 145);
   --pl-bg-2:    oklch(19% 0.022 145);
   --pl-bg-3:    oklch(14% 0.018 145);
@@ -772,103 +643,56 @@ function DashStyles() {
   --pl-muted:   oklch(65% 0.018 130);
   --pl-border:  oklch(28% 0.020 145);
   --pl-border-2:oklch(34% 0.022 145);
-  --pl-bright:  #8FCB3C;
-  --pl-mid:     #6FAD2A;
-  --pl-light:   oklch(28% 0.040 130);
-  --pl-light-b: oklch(34% 0.050 130);
+  --pl-shadow-1: 0 1px 2px rgba(0,0,0,.4), 0 4px 18px -8px rgba(0,0,0,.5);
+  --pl-shadow-2: 0 2px 6px rgba(0,0,0,.4), 0 18px 60px -20px rgba(0,0,0,.6);
   --pl-amber:   #FCD34D;
-  --pl-amber-bg: oklch(28% 0.08 70);
   --pl-amber-b: oklch(40% 0.10 70);
+  --pl-amber-bg: oklch(28% 0.08 70);
   --pl-red:     #FCA5A5;
-  --pl-red-bg:  oklch(28% 0.08 30);
   --pl-red-b:   oklch(40% 0.12 30);
+  --pl-red-bg:  oklch(28% 0.08 30);
   --pl-blue:    #93C5FD;
   --pl-blue-bg: oklch(28% 0.06 240);
   --pl-blue-b:  oklch(40% 0.10 240);
+  --pl-r-sm: 8px; --pl-r-md: 12px; --pl-r-lg: 18px; --pl-r-xl: 24px;
+  font-family: Georgia, 'Times New Roman', serif;
+  color: var(--pl-text);
+  background: var(--pl-bg);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
 
 .proflet-app * { box-sizing: border-box; }
 .proflet-app a { color: inherit; }
 
-.pf-mark-1 { fill: var(--pl-dark); }
-.pf-mark-2 { fill: var(--pl-mid); }
+.pf-mark-1 { fill: var(--pl-bright); opacity: .55; }
+.pf-mark-2 { fill: var(--pl-bright); opacity: .8; }
 .pf-mark-3 { fill: var(--pl-bright); }
-.pf-mark-text-1 { fill: var(--pl-mid); }
-.pf-mark-text-2 { fill: var(--pl-bright); }
-@media (prefers-color-scheme: dark) {
-  .proflet-app .pf-mark-1 { fill: var(--pl-bright); opacity: .55; }
-  .proflet-app .pf-mark-2 { fill: var(--pl-bright); opacity: .8; }
-  .proflet-app .pf-mark-3 { fill: var(--pl-bright); }
-  .proflet-app .pf-mark-text-1 { fill: var(--pl-bright); }
-  .proflet-app .pf-mark-text-2 { fill: var(--pl-bright); opacity: .75; }
-}
+.pf-mark-text-1 { fill: var(--pl-bright); }
+.pf-mark-text-2 { fill: var(--pl-bright); opacity: .75; }
 
-.pf-nav {
-  position: sticky; top: 0; z-index: 100;
-  backdrop-filter: saturate(160%) blur(14px);
-  -webkit-backdrop-filter: saturate(160%) blur(14px);
-  background: color-mix(in oklab, var(--pl-bg) 85%, transparent);
-  border-bottom: 1px solid var(--pl-border);
-}
-.pf-nav-inner {
-  max-width: 1200px; margin: 0 auto; padding: 0 1.5rem;
-  height: 64px; display: flex; align-items: center; gap: 24px;
-}
+.pf-nav { position: sticky; top: 0; z-index: 100; backdrop-filter: saturate(160%) blur(14px); -webkit-backdrop-filter: saturate(160%) blur(14px); background: color-mix(in oklab, var(--pl-bg) 85%, transparent); border-bottom: 1px solid var(--pl-border); }
+.pf-nav-inner { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; height: 64px; display: flex; align-items: center; gap: 24px; }
 .pf-nav-brand { display: inline-flex; flex-shrink: 0; }
 .pf-nav-tabs { display: flex; gap: 2px; margin-left: 12px; overflow-x: auto; scrollbar-width: none; }
 .pf-nav-tabs::-webkit-scrollbar { display: none; }
-.pf-nav-tab {
-  font-family: Georgia, serif; font-size: 13.5px; font-weight: 400;
-  text-transform: capitalize; background: transparent; border: 0;
-  color: var(--pl-text-2); padding: 8px 14px; border-radius: 999px;
-  cursor: pointer; white-space: nowrap; transition: color .18s, background .18s;
-}
+.pf-nav-tab { font-family: Georgia, serif; font-size: 13.5px; font-weight: 400; text-transform: capitalize; background: transparent; border: 0; color: var(--pl-text-2); padding: 8px 14px; border-radius: 999px; cursor: pointer; white-space: nowrap; transition: color .18s, background .18s; }
 .pf-nav-tab:hover { color: var(--pl-text); background: var(--pl-bg-3); }
-.pf-nav-tab.pf-active {
-  background: var(--pl-light); color: var(--pl-mid); font-weight: 500;
-  border: 1px solid var(--pl-light-b); padding: 7px 13px;
-}
-.pf-nav-signout {
-  margin-left: auto; font-family: Georgia, serif; font-size: 12.5px;
-  color: var(--pl-text-2); background: transparent; border: 1px solid var(--pl-border);
-  border-radius: 999px; padding: 7px 14px; cursor: pointer; white-space: nowrap;
-  transition: color .18s, border-color .18s, background .18s;
-}
+.pf-nav-tab.pf-active { background: var(--pl-light); color: var(--pl-mid); font-weight: 500; border: 1px solid var(--pl-light-b); padding: 7px 13px; }
+.pf-nav-signout { margin-left: auto; font-family: Georgia, serif; font-size: 12.5px; color: var(--pl-text-2); background: transparent; border: 1px solid var(--pl-border); border-radius: 999px; padding: 7px 14px; cursor: pointer; white-space: nowrap; transition: color .18s, border-color .18s, background .18s; }
 .pf-nav-signout:hover { color: var(--pl-text); border-color: var(--pl-border-2); background: var(--pl-bg-3); }
 
 .pf-body { max-width: 1200px; margin: 0 auto; padding: 1.75rem 1.5rem 4rem; }
 .pf-dash { display: flex; flex-direction: column; gap: 14px; }
-
-.pf-dash-header {
-  display: flex; justify-content: space-between; align-items: flex-end;
-  flex-wrap: wrap; gap: 1.25rem; margin-bottom: .5rem;
-}
-.pf-dash-eyebrow {
-  font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 11px;
-  font-weight: 500; letter-spacing: .14em; text-transform: uppercase;
-  color: var(--pl-mid); margin-bottom: .55rem;
-  display: inline-flex; align-items: center; gap: 8px;
-}
+.pf-dash-header { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1.25rem; margin-bottom: .5rem; }
+.pf-dash-eyebrow { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 11px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--pl-mid); margin-bottom: .55rem; display: inline-flex; align-items: center; gap: 8px; }
 .pf-dash-eyebrow::before { content: ''; width: 22px; height: 1px; background: currentColor; display: inline-block; opacity: .5; }
-.pf-dash-title {
-  font-family: Georgia, serif; font-weight: 500;
-  font-size: clamp(28px, 3vw, 36px); line-height: 1.12;
-  letter-spacing: -0.02em; color: var(--pl-text); margin: 0; text-wrap: balance;
-}
+.pf-dash-title { font-family: Georgia, serif; font-weight: 500; font-size: clamp(28px, 3vw, 36px); line-height: 1.12; letter-spacing: -0.02em; color: var(--pl-text); margin: 0; }
 .pf-dash-summary { font-size: 14px; color: var(--pl-text-2); margin-top: .5rem; line-height: 1.55; }
 .pf-dash-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
-.pf-cta {
-  position: relative; display: inline-flex; align-items: center; gap: 8px;
-  font-family: Georgia, serif; font-weight: 500; font-size: 13px;
-  border: 0; cursor: pointer; border-radius: 999px; padding: 9px 16px;
-  transition: transform .18s ease, box-shadow .18s ease; white-space: nowrap;
-}
-.pf-cta-primary {
-  color: white;
-  background: linear-gradient(180deg, var(--pl-bright) 0%, var(--pl-mid) 100%);
-  box-shadow: 0 1px 0 rgba(255,255,255,.25) inset, 0 -1px 0 rgba(0,0,0,.15) inset, 0 8px 22px -8px rgba(59,109,17,.55), 0 2px 4px rgba(20,40,10,.18);
-}
+.pf-cta { position: relative; display: inline-flex; align-items: center; gap: 8px; font-family: Georgia, serif; font-weight: 500; font-size: 13px; border: 0; cursor: pointer; border-radius: 999px; padding: 9px 16px; transition: transform .18s ease, box-shadow .18s ease; white-space: nowrap; }
+.pf-cta-primary { color: white; background: linear-gradient(180deg, var(--pl-bright) 0%, var(--pl-mid) 100%); box-shadow: 0 1px 0 rgba(255,255,255,.25) inset, 0 -1px 0 rgba(0,0,0,.15) inset, 0 8px 22px -8px rgba(59,109,17,.55), 0 2px 4px rgba(20,40,10,.18); }
 .pf-cta-primary:hover { transform: translateY(-1px); }
 .pf-cta-primary:disabled, .pf-cta-loading { opacity: .8; cursor: wait; transform: none; }
 .pf-spinner { width: 11px; height: 11px; border: 1.5px solid rgba(255,255,255,.4); border-top-color: white; border-radius: 50%; animation: pf-spin .7s linear infinite; }
@@ -881,12 +705,7 @@ function DashStyles() {
 
 .pf-metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
 .pf-metric-grid-2 { margin-bottom: .5rem; }
-.pf-metric {
-  position: relative; background: var(--pl-bg-2); border: 1px solid var(--pl-border);
-  border-radius: var(--pl-r-md); padding: 1rem 1.15rem 1.05rem;
-  box-shadow: var(--pl-shadow-1); overflow: hidden;
-  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-}
+.pf-metric { position: relative; background: var(--pl-bg-2); border: 1px solid var(--pl-border); border-radius: var(--pl-r-md); padding: 1rem 1.15rem 1.05rem; box-shadow: var(--pl-shadow-1); overflow: hidden; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
 .pf-metric::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 100% 0%, color-mix(in oklab, var(--pl-bright) 8%, transparent), transparent 60%); opacity: 0; transition: opacity .25s ease; pointer-events: none; }
 .pf-metric:hover { box-shadow: var(--pl-shadow-2); border-color: var(--pl-border-2); }
 .pf-metric:hover::before { opacity: 1; }
@@ -894,11 +713,11 @@ function DashStyles() {
 .pf-metric-highlight::after { content: ''; position: absolute; inset: 0 0 auto 0; height: 1px; background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--pl-bright) 60%, transparent), transparent); }
 .pf-metric-label { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 10.5px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--pl-muted); margin-bottom: 8px; position: relative; }
 .pf-metric-value { font-family: Georgia, serif; font-size: 24px; font-weight: 500; letter-spacing: -0.015em; color: var(--pl-text); line-height: 1.1; position: relative; }
-.pf-metric-mid    { color: var(--pl-mid); }
-.pf-metric-amber  { color: var(--pl-amber); }
-.pf-metric-red    { color: var(--pl-red); }
+.pf-metric-mid { color: var(--pl-mid); }
+.pf-metric-amber { color: var(--pl-amber); }
+.pf-metric-red { color: var(--pl-red); }
 .pf-metric-sub { font-family: ui-monospace, monospace; font-size: 11px; color: var(--pl-muted); margin-top: 6px; position: relative; }
-.pf-metric-sub.pf-up   { color: var(--pl-mid); }
+.pf-metric-sub.pf-up { color: var(--pl-mid); }
 .pf-metric-sub.pf-warn { color: var(--pl-amber); }
 
 .pf-metric-health { display: flex; flex-direction: column; }
@@ -915,7 +734,7 @@ function DashStyles() {
 .pf-health-text-poor { color: var(--pl-red); }
 
 .pf-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.pf-card { position: relative; background: var(--pl-bg-2); border: 1px solid var(--pl-border); border-radius: var(--pl-r-lg); padding: 1.25rem 1.4rem 1.25rem; box-shadow: var(--pl-shadow-1); transition: box-shadow .2s ease, border-color .2s ease; }
+.pf-card { position: relative; background: var(--pl-bg-2); border: 1px solid var(--pl-border); border-radius: var(--pl-r-lg); padding: 1.25rem 1.4rem; box-shadow: var(--pl-shadow-1); transition: box-shadow .2s ease, border-color .2s ease; }
 .pf-card:hover { box-shadow: var(--pl-shadow-2); }
 .pf-section-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; gap: 12px; flex-wrap: wrap; }
 .pf-section-eyebrow { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 10.5px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--pl-mid); display: inline-flex; align-items: center; gap: 8px; }
@@ -937,8 +756,8 @@ function DashStyles() {
 .pf-table-meta { font-family: ui-monospace, monospace; font-size: 11px; color: var(--pl-muted); margin-top: 2px; }
 .pf-num { text-align: right; font-family: ui-monospace, monospace; font-size: 12.5px; color: var(--pl-text-2); }
 .pf-num-strong { font-weight: 600; }
-.pf-text-mid   { color: var(--pl-mid); }
-.pf-text-red   { color: var(--pl-red); }
+.pf-text-mid { color: var(--pl-mid); }
+.pf-text-red { color: var(--pl-red); }
 .pf-text-amber { color: var(--pl-amber); }
 .pf-table-total { border-bottom: 0; border-top: 1px solid var(--pl-border-2); padding-top: 12px; margin-top: 4px; font-weight: 500; color: var(--pl-text); }
 .pf-table-total span:first-child { color: var(--pl-text); }
@@ -952,9 +771,9 @@ function DashStyles() {
 .pf-alerts-clear { display: flex; align-items: center; gap: 12px; padding: 1rem 1.1rem; background: var(--pl-light); border: 1px solid var(--pl-light-b); border-radius: var(--pl-r-md); }
 .pf-alerts-clear-icon { width: 32px; height: 32px; border-radius: 50%; background: var(--pl-mid); color: white; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .pf-alerts-clear-title { font-size: 14px; font-weight: 500; color: var(--pl-mid); }
-.pf-alerts-clear-sub   { font-size: 12px; color: var(--pl-text-2); margin-top: 2px; }
+.pf-alerts-clear-sub { font-size: 12px; color: var(--pl-text-2); margin-top: 2px; }
 .pf-alerts-list { display: flex; flex-direction: column; gap: 6px; }
-.pf-alert { display: flex; align-items: flex-start; gap: 12px; padding: 10px 12px; border-radius: var(--pl-r-md); border: 1px solid transparent; position: relative; transition: transform .2s ease, box-shadow .2s ease; }
+.pf-alert { display: flex; align-items: flex-start; gap: 12px; padding: 10px 12px; border-radius: var(--pl-r-md); border: 1px solid transparent; position: relative; transition: transform .2s ease; }
 .pf-alert:hover { transform: translateX(2px); }
 .pf-alert-pulse { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
 .pf-alert-red { background: var(--pl-red-bg); border-color: var(--pl-red-b); }
@@ -974,24 +793,9 @@ function DashStyles() {
 .pf-forecast-label { font-family: ui-monospace, monospace; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--pl-mid); }
 .pf-forecast-value { font-family: Georgia, serif; font-size: 18px; font-weight: 500; color: var(--pl-mid); letter-spacing: -0.01em; }
 
-@media (prefers-color-scheme: dark) {
-  .proflet-app .recharts-cartesian-grid line { stroke: var(--pl-border) !important; }
-}
-@media (max-width: 1000px) {
-  .pf-metric-grid { grid-template-columns: repeat(2, 1fr); }
-  .pf-grid-2 { grid-template-columns: 1fr; }
-}
-@media (max-width: 600px) {
-  .pf-metric-grid { grid-template-columns: 1fr; }
-  .pf-dash-header { align-items: flex-start; }
-  .pf-dash-controls { width: 100%; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .proflet-app *, .proflet-app *::before, .proflet-app *::after {
-    animation: none !important;
-    transition: none !important;
-  }
-}
+@media (max-width: 1000px) { .pf-metric-grid { grid-template-columns: repeat(2, 1fr); } .pf-grid-2 { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .pf-metric-grid { grid-template-columns: 1fr; } .pf-dash-header { align-items: flex-start; } .pf-dash-controls { width: 100%; } }
+@media (prefers-reduced-motion: reduce) { .proflet-app *, .proflet-app *::before, .proflet-app *::after { animation: none !important; transition: none !important; } }
     `}</style>
   )
 }
