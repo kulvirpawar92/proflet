@@ -1,4 +1,4 @@
-markdown# Proflet — Project Summary
+# Proflet — Project Summary
 
 ## What is Proflet?
 A property portfolio CRM SaaS app for UK landlords with 1-5 properties.
@@ -51,7 +51,7 @@ Replaces spreadsheets with a clean, simple web app.
    - JWT verification: OFF
    - Uses constructEventAsync (not constructEvent)
    - Sends welcome email via Zoho SMTP on checkout.session.completed
-   - Secret: STRIPE_WEBHOOK_SECRET, ZOHO_EMAIL, ZOHO_PASSWORD
+   - Secrets: STRIPE_WEBHOOK_SECRET, ZOHO_EMAIL, ZOHO_PASSWORD
 
 ## Supabase secrets stored
 - ANTHROPIC_KEY — Anthropic API key for AI chat
@@ -102,103 +102,104 @@ create table subscriptions (
 - Environment variables: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_STRIPE_PUBLISHABLE_KEY
 
 ## File structure
+```
 proflet/
 ├── src/
 │   ├── components/
-│   │   ├── Auth.jsx         — login/signup, forgot password flow
-│   │   ├── Dashboard.jsx    — main app shell, nav, all charts, AI chat, generate button
-│   │   ├── Properties.jsx
-│   │   ├── Income.jsx       — export CSV, import CSV with template
-│   │   ├── Expenses.jsx     — export CSV, import CSV with template
+│   │   ├── Auth.jsx            — login/signup, forgot password flow
+│   │   ├── Dashboard.jsx       — main app shell, nav, all charts, AI chat — ALWAYS DARK
+│   │   ├── Properties.jsx      — property cards, detail view, add/edit modal — ALWAYS DARK
+│   │   ├── Income.jsx
+│   │   ├── Expenses.jsx
 │   │   ├── Cases.jsx
 │   │   ├── Tasks.jsx
 │   │   ├── Contacts.jsx
-│   │   ├── Landing.jsx      — marketing landing page with mobile hamburger menu
-│   │   ├── Paywall.jsx      — payment page shown after signup
-│   │   ├── Success.jsx      — post-payment confirmation
-│   │   ├── ResetPassword.jsx — password reset handler
-│   │   └── AIChat.jsx       — floating AI chat widget
-│   ├── App.jsx              — Landing → Auth → Paywall → Dashboard → ResetPassword flow
+│   │   ├── Landing.jsx         — marketing landing page, hamburger menu — ALWAYS DARK
+│   │   ├── Paywall.jsx         — payment page shown after signup
+│   │   ├── Success.jsx         — post-payment confirmation
+│   │   ├── ResetPassword.jsx   — password reset handler
+│   │   └── AIChat.jsx          — floating AI chat widget
+│   ├── App.jsx                 — routing flow
 │   ├── supabase.js
 │   ├── main.jsx
-│   └── index.css
-├── .env                     — VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_STRIPE_PUBLISHABLE_KEY
-├── vercel.json              — rewrites all routes to index.html
+│   └── index.css               — body bg: oklch(16% 0.020 145), no border-inline on #root
+├── .env                        — VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_STRIPE_PUBLISHABLE_KEY
+├── vercel.json                 — rewrites all routes to index.html
 ├── PROJECT.md
 ├── package.json
 └── vite.config.js
+```
 
 ## App flow
+```
 Visit proflet.com
-→ Landing page (with mobile hamburger menu)
-→ Click Get Started
-→ Auth (login/signup)
-→ After login, App.jsx checks subscriptions table
-→ No active subscription → Paywall (£19/year button)
-→ Click pay → Stripe checkout → stripe-webhook fires → subscriptions updated
-→ Welcome email sent to user
-→ Success.jsx verifies payment → redirects to Dashboard
-→ Active subscription → Dashboard (full app)
-→ /reset-password → ResetPassword.jsx
+  → Landing page (dark, hamburger menu on mobile)
+  → Click Get Started
+  → Auth (login/signup)
+  → App.jsx checks subscriptions table
+  → No active subscription → Paywall (£19/year)
+  → Stripe checkout → stripe-webhook → subscriptions updated
+  → Welcome email sent
+  → Success.jsx → redirects to Dashboard
+  → Active subscription → Dashboard
+  → /reset-password → ResetPassword.jsx
+```
 
 ## Demo account
 - Email: hello@proflet.com
 - User ID: 0bdab181-ff98-4098-a393-6673ec2c76bd
 - Manually activated in subscriptions table
-- Demo data: 3 properties, 24 months income/expenses
+- Demo data: 3 properties, 24 months income/expenses (Jun 2024 – May 2026)
   - 14 Ash Grove, Manchester M14 5QR — £1,400/month, mortgage £780
   - 8 Penn Street, Leeds LS6 2JT — £1,200/month, mortgage £620
   - 12 Oak Lane, Sheffield S10 3FG — £800/month, mortgage £410
 - 8 contacts (3 tenants, 2 contractors, 1 agent, 1 lender, 1 insurer)
 - 5 cases, 6 tasks
+- Monthly costs = £1,810 (mortgages only, current month recurring)
+- Monthly profit = £1,590
 
 ## Dashboard calculations
-- Monthly costs = recurring expenses from CURRENT MONTH only
+- Monthly costs = recurring expenses from CURRENT MONTH only (filtered by YYYY-MM)
 - Monthly profit = monthly rent - monthly costs
 - Charts use actual income/expense records per month (no fallback)
 - Income status filter uses lowercase 'received'
+
+## Dark mode implementation
+- Landing.jsx — dark tokens set as defaults, no prefers-color-scheme override
+- Dashboard.jsx — dark tokens set as defaults, no prefers-color-scheme override
+- Properties.jsx — dark tokens set as defaults, no prefers-color-scheme override
+- Auth.jsx, Paywall.jsx, Success.jsx, ResetPassword.jsx — STILL USE prefers-color-scheme (pending)
+- index.css — body background: oklch(16% 0.020 145), border-inline removed from #root
 
 ## Auth settings
 - Email confirmation: OFF (Supabase → Auth → Sign In Providers → Email)
 - Site URL: https://proflet.com
 - Redirect URLs: https://proflet.com, https://proflet.com/reset-password
 
-## Design system
-- Landing page uses CSS class approach with --pl-* CSS variables
-- Dashboard uses inline styles with CSS variables
-- All use Georgia serif + ui-monospace pairing
-- Dark mode via prefers-color-scheme
-- Mobile hamburger menu on landing page (≤720px)
-- Feature cards have no arrows (removed — looked clickable)
+## Key fixes applied
+- Stripe webhook: uses constructEventAsync (not constructEvent)
+- Dashboard expense calc: recurring expenses filtered to current month only
+- AI chat Edge Function: model is claude-haiku-4-5-20251001
+- vercel.json: must be at project root (not in src/)
+- index.css: removed border-inline from #root, set dark body background
 
-## COMPLETED ✅
-- Full app with all 7 pages
-- Supabase database, auth, RLS
-- Recurring income/expense Edge Function + cron
-- AI chat widget (claude-haiku-4-5-20251001)
-- Landing page with mobile hamburger menu
-- Stripe payments LIVE — full webhook flow, paywall, success page
-- Welcome email on payment via Zoho SMTP
-- Password reset flow (Auth.jsx + ResetPassword.jsx)
-- Deployed to Vercel at proflet.com
-- Custom favicon (green bar chart)
-- Demo account with 3 properties and 24 months data
-- Zoho email setup (hello@proflet.com)
+## New laptop setup checklist
+1. Install Node.js — nodejs.org
+2. Install Homebrew — /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+3. Install GitHub CLI — brew install gh
+4. Authenticate — gh auth login
+5. Clone repo — git clone https://github.com/kulvirpawar92/proflet
+6. cd proflet && npm install
+7. Create .env file with 3 keys (see .env section below)
+8. npm run dev → open http://localhost:5173
 
-## PENDING — Next steps
-1. **Mobile responsive** — app pages collapse on small screens, bottom tab nav
-2. **PWA** — manifest.json + service worker
-3. **Cases, Tasks, Contacts redesign** — still need claude.ai/design treatment
-4. **CSV import for Properties** (post-launch)
-5. **PDF P&L export** (post-launch)
-6. **AI monthly summary** (post-launch)
-
-## How to run locally
-```bash
-cd proflet
-npm run dev
-# open http://localhost:5173
+## .env file contents (needed on new laptop)
 ```
+VITE_SUPABASE_URL=https://wjjqgzyjubvhxivlqnxq.supabase.co
+VITE_SUPABASE_ANON_KEY=<your anon key from Supabase → Settings → API>
+VITE_STRIPE_PUBLISHABLE_KEY=<your publishable key from Stripe → Developers → API keys>
+```
+Keep these values saved securely (password manager). The anon key and publishable key are safe to store — they are public-facing keys.
 
 ## How to deploy changes
 ```bash
@@ -209,7 +210,34 @@ git push
 # Vercel auto-deploys from GitHub
 ```
 
+## COMPLETED ✅
+- Full app: Dashboard, Properties, Income, Expenses, Cases, Tasks, Contacts
+- Supabase database, auth, RLS on all tables
+- Recurring income/expense Edge Function + cron job
+- AI chat widget (claude-haiku-4-5-20251001) — working
+- Landing page — always dark, mobile hamburger menu
+- Dashboard — always dark, all charts working
+- Properties page — always dark
+- Stripe payments LIVE — full webhook flow, paywall, success page
+- Welcome email on payment via Zoho SMTP
+- Password reset flow
+- Deployed to Vercel at proflet.com with custom domain
+- Custom favicon (green bar chart SVG)
+- Demo account with 3 properties and 24 months realistic data
+- Zoho email setup (hello@proflet.com)
+- index.css: full-width dark background, no border bars
+
+## PENDING — Next steps
+1. **Landing page — more realistic dashboard screenshot/mockup** replacing the current SVG mock
+2. **Demo video** — OBS/Loom → CapCut (speed + zooms + music + auto-captions) → embed on landing page
+   - Shot list: Landing → Dashboard metrics → Properties → AI chat (money shot) → Alerts → Pricing
+3. **Dark mode** — still needed for: Auth.jsx, Paywall.jsx, Success.jsx, ResetPassword.jsx
+4. **Mobile responsiveness** — app pages need responsive layout + bottom tab nav for mobile
+5. **PWA** — manifest.json + service worker
+6. **PDF P&L export** (post-launch)
+7. **AI monthly summary email** (post-launch)
+
 ## How to continue in a new chat
-Paste this PROJECT.md and say:
+Copy this entire PROJECT.md and start a new chat with:
 "Here is my Proflet project summary. I want to continue building.
 Today I want to: [describe what you want to do]"
