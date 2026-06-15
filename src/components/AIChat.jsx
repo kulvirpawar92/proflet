@@ -46,15 +46,29 @@ export default function AIChat({ props, income, expenses, cases, tasks, contacts
     const fmt = (n) => '£' + Math.round(n || 0).toLocaleString()
     const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-GB') : 'not set'
 
+    // Current month key for filtering recurring expenses
+    const now = new Date()
+    const currentKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+
     const propDetails = props.map(p => {
       const propIncome = income.filter(i => i.property_id === p.id)
       const propExpenses = expenses.filter(e => e.property_id === p.id)
-      const totalIncome = propIncome.filter(i => i.status === 'Received').reduce((s, i) => s + (i.amount || 0), 0)
+
+      // Fix: case-insensitive status check
+      const totalIncome = propIncome
+        .filter(i => i.status?.toLowerCase() === 'received')
+        .reduce((s, i) => s + (i.amount || 0), 0)
+
       const totalExpenses = propExpenses.reduce((s, e) => s + (e.amount || 0), 0)
       const equity = (p.current_value || 0) - (p.mortgage_balance || 0)
       const ltv = p.current_value ? Math.round((p.mortgage_balance || 0) / p.current_value * 100) : 0
       const yield_ = p.current_value ? ((p.monthly_rent || 0) * 12 / p.current_value * 100).toFixed(1) : 0
-      const recurringExp = propExpenses.filter(e => e.recurring).reduce((s, e) => s + (e.amount || 0), 0)
+
+      // Fix: only sum recurring expenses from current month
+      const recurringExp = propExpenses
+        .filter(e => e.recurring && e.date && e.date.startsWith(currentKey))
+        .reduce((s, e) => s + (e.amount || 0), 0)
+
       const monthlyProfit = (p.monthly_rent || 0) - recurringExp
 
       return `
@@ -68,23 +82,36 @@ Property: ${p.name}
 - Interest rate: ${p.interest_rate ? p.interest_rate + '%' : 'not set'} | Fixed term ends: ${fmtDate(p.fixed_term_end)} | Remortgage date: ${fmtDate(p.remortgage_date)}
 - Equity: ${fmt(equity)} | LTV: ${ltv}%
 - Gross yield: ${yield_}%
-- Monthly profit: ${fmt(monthlyProfit)}
+- Monthly profit (this month): ${fmt(monthlyProfit)}
 - Tenancy start: ${fmtDate(p.tenancy_start)} | Tenancy end: ${fmtDate(p.tenancy_end)}
 - Insurance provider: ${p.insurance_provider || 'not set'} | Renewal: ${fmtDate(p.insurance_renewal)}
-- Total income received: ${fmt(totalIncome)}
-- Total expenses: ${fmt(totalExpenses)}
-- Net P&L: ${fmt(totalIncome - totalExpenses)}`
+- Total income received (all time): ${fmt(totalIncome)}
+- Total expenses (all time): ${fmt(totalExpenses)}
+- Net P&L (all time): ${fmt(totalIncome - totalExpenses)}`
     }).join('\n')
 
     const totalEquity = props.reduce((s, p) => s + (p.current_value || 0) - (p.mortgage_balance || 0), 0)
     const totalRent = props.reduce((s, p) => s + (p.monthly_rent || 0), 0)
     const totalMortgage = props.reduce((s, p) => s + (p.mortgage_payment || 0), 0)
-    const totalRecurringExp = expenses.filter(e => e.recurring).reduce((s, e) => s + (e.amount || 0), 0)
+
+    // Fix: only sum recurring expenses from current month
+    const totalRecurringExp = expenses
+      .filter(e => e.recurring && e.date && e.date.startsWith(currentKey))
+      .reduce((s, e) => s + (e.amount || 0), 0)
+
     const totalMonthlyProfit = totalRent - totalRecurringExp
     const totalPortfolioValue = props.reduce((s, p) => s + (p.current_value || 0), 0)
-    const totalReceived = income.filter(i => i.status === 'Received').reduce((s, i) => s + (i.amount || 0), 0)
-    const totalPending = income.filter(i => i.status === 'Pending').reduce((s, i) => s + (i.amount || 0), 0)
-    const totalOverdue = income.filter(i => i.status === 'Overdue').reduce((s, i) => s + (i.amount || 0), 0)
+
+    // Fix: case-insensitive status check
+    const totalReceived = income
+      .filter(i => i.status?.toLowerCase() === 'received')
+      .reduce((s, i) => s + (i.amount || 0), 0)
+    const totalPending = income
+      .filter(i => i.status?.toLowerCase() === 'pending')
+      .reduce((s, i) => s + (i.amount || 0), 0)
+    const totalOverdue = income
+      .filter(i => i.status?.toLowerCase() === 'overdue')
+      .reduce((s, i) => s + (i.amount || 0), 0)
 
     const openCases = cases.filter(c => c.status !== 'Closed').length
     const highCases = cases.filter(c => c.priority === 'High' && c.status !== 'Closed').length
@@ -99,19 +126,19 @@ PORTFOLIO SUMMARY
 - Total equity: ${fmt(totalEquity)}
 - Monthly rent income: ${fmt(totalRent)}
 - Monthly mortgage payments: ${fmt(totalMortgage)}
-- Monthly recurring expenses: ${fmt(totalRecurringExp)}
-- Monthly profit: ${fmt(totalMonthlyProfit)}
+- Monthly recurring expenses (this month): ${fmt(totalRecurringExp)}
+- Monthly profit (this month): ${fmt(totalMonthlyProfit)}
 - Annual profit estimate: ${fmt(totalMonthlyProfit * 12)}
 
 INCOME SUMMARY
-- Total received: ${fmt(totalReceived)}
+- Total received (all time): ${fmt(totalReceived)}
 - Pending: ${fmt(totalPending)}
 - Overdue: ${fmt(totalOverdue)}
 - Total records: ${income.length}
 
 EXPENSE SUMMARY
-- Total expenses logged: ${fmt(expenses.reduce((s, e) => s + (e.amount || 0), 0))}
-- Monthly recurring total: ${fmt(totalRecurringExp)}
+- Total expenses logged (all time): ${fmt(expenses.reduce((s, e) => s + (e.amount || 0), 0))}
+- Monthly recurring (this month only): ${fmt(totalRecurringExp)}
 - Total records: ${expenses.length}
 
 CASES & TASKS
