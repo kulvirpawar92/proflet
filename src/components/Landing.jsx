@@ -15,6 +15,7 @@ export default function Landing({ onGetStarted = () => {} }) {
       <Styles />
       <Nav scrolled={scrolled} onGetStarted={onGetStarted} />
       <Hero onGetStarted={onGetStarted} />
+      <DemoVideo />
       <PainPoints />
       <Features />
       <HowItWorks />
@@ -297,6 +298,29 @@ function Glyph({ kind }) {
     case 'ai':     return <svg {...s}><path d="M7 1.5l1.2 3.3L11.5 6 8.2 7.2 7 10.5 5.8 7.2 2.5 6l3.3-1.2L7 1.5z"/><path d="M11 10l.6 1.4 1.4.6-1.4.6L11 14l-.6-1.4-1.4-.6 1.4-.6L11 10z"/></svg>
     default: return null
   }
+}
+
+function DemoVideo() {
+  return (
+    <section className="pl-section pl-section-video">
+      <div className="pl-section-inner">
+        <div className="pl-section-head pl-section-head-center">
+          <Eyebrow>See it in action</Eyebrow>
+          <h2 className="pl-section-title">A minute is all it takes.</h2>
+        </div>
+        <div className="pl-video-wrap">
+          <iframe
+            src="https://www.youtube.com/embed/J-EKMlkPTJE"
+            title="Proflet demo"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="pl-video-iframe"
+          />
+        </div>
+      </div>
+    </section>
+  )
 }
 
 function PainPoints() {
@@ -760,6 +784,25 @@ function Styles() {
 .pl-prop-status.pl-warn { color: #FCD34D; background: oklch(28% 0.08 70); }
 .pl-dash-shadow { position: absolute; left: 8%; right: 8%; bottom: -30px; height: 60px; background: radial-gradient(ellipse at center, rgba(20,40,10,.30), transparent 70%); filter: blur(20px); z-index: -1; }
 @media (max-width: 880px) { .pl-dash-body { grid-template-columns: 1fr; } .pl-dash-side { display: none; } .pl-dash-stats { grid-template-columns: repeat(2, 1fr); } .pl-dash-row { grid-template-columns: 1fr; } }
+
+/* Demo video */
+.pl-section-video { background: var(--pl-bg); }
+.pl-video-wrap {
+  position: relative;
+  max-width: 860px;
+  margin: 0 auto;
+  border-radius: var(--pl-r-lg);
+  overflow: hidden;
+  border: 1px solid var(--pl-border-2);
+  box-shadow: var(--pl-shadow-3);
+  aspect-ratio: 16 / 9;
+}
+.pl-video-iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
 
 /* Pain */
 .pl-section-pain { background: var(--pl-bg-2); border-top: 1px solid var(--pl-border); border-bottom: 1px solid var(--pl-border); }
