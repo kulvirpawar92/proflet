@@ -310,7 +310,7 @@ function DemoVideo() {
         </div>
         <div className="pl-video-wrap">
           <iframe
-            src="https://www.youtube.com/embed/_z4tulbT4lI"
+            src="https://www.youtube.com/embed/J-EKMlkPTJE"
             title="Proflet demo"
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -922,6 +922,67 @@ function Styles() {
 
 @keyframes pl-fade-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 @media (prefers-reduced-motion: reduce) { .proflet-lp *, .proflet-lp *::before, .proflet-lp *::after { animation: none !important; transition: none !important; } }
+
+/* ── MOBILE ──────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+
+  /* Nav — fix Sign in wrapping */
+  .pl-nav-signin { display: none; }
+  .pl-nav-inner { gap: 12px; padding: 0 1rem; }
+
+  /* Tighter section padding */
+  .pl-section { padding: 3rem 1.25rem; }
+  .pl-section-final { padding: 2rem 1.25rem 4rem; }
+  .pl-hero { padding: 3rem 1.25rem 1.5rem; }
+  .pl-section-head { margin-bottom: 2rem; }
+  .pl-section-title { font-size: clamp(24px, 7vw, 32px); }
+
+  /* Hero */
+  .pl-hero-badge { font-size: 11px; padding: 5px 10px; }
+  .pl-hero-actions { flex-direction: column; align-items: stretch; }
+  .pl-hero-actions .pl-cta { justify-content: center; }
+  .pl-hero-meta { font-size: 11px; }
+
+  /* Hide dashboard mockup — video shows the real thing */
+  .pl-dash-wrap { display: none; }
+
+  /* Pain points */
+  .pl-pain-card { min-height: auto; padding: 1.25rem; }
+  .pl-pain-quotemark { font-size: 40px; }
+  .pl-pain-quote { font-size: 14.5px; }
+
+  /* Features */
+  .pl-feature-card { padding: 1.25rem; }
+
+  /* How It Works */
+  .pl-how-step { padding: 0; }
+  .pl-how-title { font-size: 15px; }
+
+  /* Pricing */
+  .pl-price-card { padding: 1.5rem 1.25rem; }
+  .pl-price-number { font-size: 68px; }
+  .pl-price-currency { font-size: 22px; }
+  .pl-price-foot { flex-direction: column; align-items: center; gap: 10px; }
+
+  /* Stats */
+  .pl-stat-card-num { white-space: normal; }
+
+  /* FAQ */
+  .pl-faq-q { font-size: 15px; padding: 1rem 0; }
+
+  /* Final CTA */
+  .pl-final-card { padding: 2.5rem 1.25rem; border-radius: var(--pl-r-lg); }
+  .pl-final-title { font-size: clamp(24px, 6vw, 32px); }
+  .pl-final-sub { font-size: 15px; }
+
+  /* Footer */
+  .pl-footer-inner { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .pl-footer-text { margin-left: 0; }
+  .pl-footer-links { margin-left: 0; }
+
+  /* Video */
+  .pl-section-video { padding: 2.5rem 1.25rem; }
+}
     `}</style>
   )
 }
