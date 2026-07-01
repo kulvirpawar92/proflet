@@ -310,7 +310,7 @@ function DemoVideo() {
         </div>
         <div className="pl-video-wrap">
           <iframe
-            src="https://www.youtube.com/embed/J-EKMlkPTJE"
+            src="https://www.youtube.com/embed/_z4tulbT4lI"
             title="Proflet demo"
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
