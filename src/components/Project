@@ -12,9 +12,10 @@ Replaces spreadsheets with a clean, simple web app.
 
 ## Brand
 - Name: Proflet (profit + let)
-- Colours: #173404 (dark forest), #3B6D11 (mid green), #639922 (bright green)
+- Colours: #173404 (dark forest), #6FAD2A (mid green), #8FCB3C (bright green)
 - Font: Georgia, serif
-- Logo: rising bar chart mark + "prof" in mid green + "let" in bright green
+- Logo: rising bar chart mark + "prof" bold + "let" regular
+- High-res logo PNG: proflet_logo_hq.png (1760×448px) — for CapCut/video editing
 - Tagline: "Stop managing your properties on spreadsheets"
 - Domain: proflet.com (NOT .co.uk — important!)
 
@@ -106,25 +107,25 @@ create table subscriptions (
 proflet/
 ├── src/
 │   ├── components/
-│   │   ├── Auth.jsx            — login/signup, forgot password flow
-│   │   ├── Dashboard.jsx       — main app shell, nav, all charts, AI chat — ALWAYS DARK
-│   │   ├── Properties.jsx      — property cards, detail view, add/edit modal — ALWAYS DARK
-│   │   ├── Income.jsx
-│   │   ├── Expenses.jsx
-│   │   ├── Cases.jsx
-│   │   ├── Tasks.jsx
-│   │   ├── Contacts.jsx
-│   │   ├── Landing.jsx         — marketing landing page, hamburger menu — ALWAYS DARK
-│   │   ├── Paywall.jsx         — payment page shown after signup
-│   │   ├── Success.jsx         — post-payment confirmation
-│   │   ├── ResetPassword.jsx   — password reset handler
-│   │   └── AIChat.jsx          — floating AI chat widget
-│   ├── App.jsx                 — routing flow
+│   │   ├── Auth.jsx              — login/signup, forgot password flow
+│   │   ├── Dashboard.jsx         — main app shell, nav, all charts — ALWAYS DARK
+│   │   ├── Properties.jsx        — property cards, detail view, add/edit modal — ALWAYS DARK
+│   │   ├── Income.jsx            — ALWAYS DARK
+│   │   ├── Expenses.jsx          — ALWAYS DARK
+│   │   ├── Cases.jsx             — ALWAYS DARK
+│   │   ├── Tasks.jsx             — ALWAYS DARK
+│   │   ├── Contacts.jsx          — ALWAYS DARK
+│   │   ├── Landing.jsx           — marketing landing page, dark, mobile responsive, demo video embedded
+│   │   ├── Paywall.jsx           — payment page shown after signup (pending dark mode)
+│   │   ├── Success.jsx           — post-payment confirmation (pending dark mode)
+│   │   ├── ResetPassword.jsx     — password reset handler (pending dark mode)
+│   │   └── AIChat.jsx            — floating AI chat widget, income+expenses bugs fixed
+│   ├── App.jsx                   — routing flow
 │   ├── supabase.js
 │   ├── main.jsx
-│   └── index.css               — body bg: oklch(16% 0.020 145), no border-inline on #root
-├── .env                        — VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_STRIPE_PUBLISHABLE_KEY
-├── vercel.json                 — rewrites all routes to index.html
+│   └── index.css                 — body bg: oklch(16% 0.020 145), no border-inline on #root
+├── .env                          — VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_STRIPE_PUBLISHABLE_KEY
+├── vercel.json                   — rewrites all routes to index.html
 ├── PROJECT.md
 ├── package.json
 └── vite.config.js
@@ -133,7 +134,7 @@ proflet/
 ## App flow
 ```
 Visit proflet.com
-  → Landing page (dark, hamburger menu on mobile)
+  → Landing page (dark, hamburger menu on mobile, demo video)
   → Click Get Started
   → Auth (login/signup)
   → App.jsx checks subscriptions table
@@ -149,14 +150,18 @@ Visit proflet.com
 - Email: hello@proflet.com
 - User ID: 0bdab181-ff98-4098-a393-6673ec2c76bd
 - Manually activated in subscriptions table
-- Demo data: 3 properties, 24 months income/expenses (Jun 2024 – May 2026)
-  - 14 Ash Grove, Manchester M14 5QR — £1,400/month, mortgage £780
-  - 8 Penn Street, Leeds LS6 2JT — £1,200/month, mortgage £620
-  - 12 Oak Lane, Sheffield S10 3FG — £800/month, mortgage £410
-- 8 contacts (3 tenants, 2 contractors, 1 agent, 1 lender, 1 insurer)
-- 5 cases, 6 tasks
+- Demo data: 3 properties, 12 months income/expenses (Jul 2025 – Jun 2026)
+  - 14 Ash Grove, Manchester M14 5QR — £1,400/month, mortgage £780, value £285k, LTV 68%
+  - 8 Penn Street, Leeds LS6 2JT — £1,200/month, mortgage £620, value £220k, LTV 60%
+  - 12 Oak Lane, Sheffield S10 3FG — £800/month, mortgage £410, value £168k, LTV 75%
+- Total portfolio value: £673k, total equity: £220k, avg LTV 67%
 - Monthly costs = £1,810 (mortgages only, current month recurring)
 - Monthly profit = £1,590
+- One-off expenses spread across year (repairs, insurance, gas safety certs)
+- 3 cases:
+  1. Boiler replacement — 14 Ash Grove (Closed, High, Maintenance)
+  2. Remortgage due — 8 Penn Street (In Progress, High, Remortgage, due Jul 2026)
+  3. Rent increase notice — 12 Oak Lane (In Progress, Medium, Tenant issue, Section 13)
 
 ## Dashboard calculations
 - Monthly costs = recurring expenses from CURRENT MONTH only (filtered by YYYY-MM)
@@ -164,12 +169,22 @@ Visit proflet.com
 - Charts use actual income/expense records per month (no fallback)
 - Income status filter uses lowercase 'received'
 
+## AIChat.jsx bug fixes (COMPLETED)
+- Income status: case-insensitive check (status?.toLowerCase() === 'received')
+- Recurring expenses: filtered to current month only using YYYY-MM key
+- Both fixes affect AI context only — not the UI pages
+
 ## Dark mode implementation
-- Landing.jsx — dark tokens set as defaults, no prefers-color-scheme override
-- Dashboard.jsx — dark tokens set as defaults, no prefers-color-scheme override
-- Properties.jsx — dark tokens set as defaults, no prefers-color-scheme override
-- Auth.jsx, Paywall.jsx, Success.jsx, ResetPassword.jsx — STILL USE prefers-color-scheme (pending)
-- index.css — body background: oklch(16% 0.020 145), border-inline removed from #root
+- All 7 app pages + Landing.jsx: dark CSS variables set as defaults, no media query needed
+- Auth.jsx, Paywall.jsx, Success.jsx, ResetPassword.jsx: still use prefers-color-scheme (pending)
+- index.css: body background oklch(16% 0.020 145), border-inline removed from #root
+
+## Landing page
+- Always dark, mobile responsive
+- Sections: Nav → Hero → Demo Video → Pain Points → Features → How It Works → Pricing → Stats → FAQ → Final CTA → Footer
+- Demo video embedded: https://www.youtube.com/embed/_z4tulbT4lI (YouTube Brand Account)
+- Mobile improvements: Sign in hidden on mobile, dashboard mockup hidden on mobile, section padding halved, hero buttons stack vertically
+- Dashboard mockup hidden on mobile (≤600px) — video replaces it
 
 ## Auth settings
 - Email confirmation: OFF (Supabase → Auth → Sign In Providers → Email)
@@ -182,6 +197,7 @@ Visit proflet.com
 - AI chat Edge Function: model is claude-haiku-4-5-20251001
 - vercel.json: must be at project root (not in src/)
 - index.css: removed border-inline from #root, set dark body background
+- AIChat.jsx: income status case-insensitive, recurring expenses current month only
 
 ## New laptop setup checklist
 1. Install Node.js — nodejs.org
@@ -199,7 +215,6 @@ VITE_SUPABASE_URL=https://wjjqgzyjubvhxivlqnxq.supabase.co
 VITE_SUPABASE_ANON_KEY=<your anon key from Supabase → Settings → API>
 VITE_STRIPE_PUBLISHABLE_KEY=<your publishable key from Stripe → Developers → API keys>
 ```
-Keep these values saved securely (password manager). The anon key and publishable key are safe to store — they are public-facing keys.
 
 ## How to deploy changes
 ```bash
@@ -214,26 +229,29 @@ git push
 - Full app: Dashboard, Properties, Income, Expenses, Cases, Tasks, Contacts
 - Supabase database, auth, RLS on all tables
 - Recurring income/expense Edge Function + cron job
-- AI chat widget (claude-haiku-4-5-20251001) — working
-- Landing page — always dark, mobile hamburger menu
-- Dashboard — always dark, all charts working
-- Properties page — always dark
+- AI chat widget (claude-haiku-4-5-20251001) — working, bugs fixed
+- Landing page — always dark, mobile responsive, demo video embedded
+- All 7 app pages — always dark mode
 - Stripe payments LIVE — full webhook flow, paywall, success page
 - Welcome email on payment via Zoho SMTP
 - Password reset flow
 - Deployed to Vercel at proflet.com with custom domain
 - Custom favicon (green bar chart SVG)
-- Demo account with 3 properties and 24 months realistic data
+- Demo account with 3 properties, 12 months realistic data, 3 cases
 - Zoho email setup (hello@proflet.com)
 - index.css: full-width dark background, no border bars
+- Demo video recorded (OBS), edited (CapCut), uploaded to YouTube Brand Account
+- Demo video embedded on landing page between Hero and Pain Points
+- Landing page mobile responsive (padding, nav, mockup hidden, buttons stacked)
+- High-res Proflet logo PNG generated (1760×448px) for video/marketing use
+- Git identity configured (kulvir / hello@proflet.com)
 
 ## PENDING — Next steps
-1. **Landing page — more realistic dashboard screenshot/mockup** replacing the current SVG mock
-2. **Demo video** — OBS/Loom → CapCut (speed + zooms + music + auto-captions) → embed on landing page
-   - Shot list: Landing → Dashboard metrics → Properties → AI chat (money shot) → Alerts → Pricing
-3. **Dark mode** — still needed for: Auth.jsx, Paywall.jsx, Success.jsx, ResetPassword.jsx
-4. **Mobile responsiveness** — app pages need responsive layout + bottom tab nav for mobile
-5. **PWA** — manifest.json + service worker
+1. **Mobile responsiveness — app pages** — bottom tab nav + card layouts for Income, Expenses, Cases, Tasks, Contacts
+2. **Dark mode** — still needed for: Auth.jsx, Paywall.jsx, Success.jsx, ResetPassword.jsx
+3. **PWA** — manifest.json + service worker
+4. **Test Stripe payment flow** with a real test user end-to-end
+5. **Verify Anthropic API credits** active in production for AI chat
 6. **PDF P&L export** (post-launch)
 7. **AI monthly summary email** (post-launch)
 
