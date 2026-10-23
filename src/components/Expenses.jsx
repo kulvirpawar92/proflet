@@ -73,6 +73,39 @@ export default function Expenses({ session, expenses, props, reload }) {
     return null
   }
 
+  // FIX 1: Proper CSV parser that handles quoted fields containing commas
+  function parseCSVLine(line) {
+    const cols = []
+    let current = ''
+    let inQuotes = false
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i]
+      if (ch === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          current += '"'
+          i++ // skip escaped quote
+        } else {
+          inQuotes = !inQuotes
+        }
+      } else if (ch === ',' && !inQuotes) {
+        cols.push(current.trim())
+        current = ''
+      } else {
+        current += ch
+      }
+    }
+    cols.push(current.trim())
+    return cols
+  }
+
+  // FIX 2: Case-insensitive type matching — maps CSV values to valid dropdown types
+  function matchType(rawType) {
+    if (!rawType) return 'Other'
+    const lower = rawType.toLowerCase().trim()
+    const match = expenseTypes.find(t => t.toLowerCase() === lower)
+    return match || null // null = genuinely unknown
+  }
+
   function downloadTemplate() {
     const headers = ['Property Name', 'Type', 'Amount', 'Date (DD/MM/YYYY)', 'Recurring (yes/no)', 'Notes']
     const examples = props.length
@@ -98,25 +131,47 @@ export default function Expenses({ session, expenses, props, reload }) {
       if (lines.length < 2) { alert('CSV appears to be empty'); return }
       const rows = []; const errors = []
       lines.slice(1).forEach((line, idx) => {
-        const cols = line.split(',').map(c => c.replace(/^"|"$/g, '').replace(/""/g, '"').trim())
-        const [propNameRaw, type, amountRaw, dateRaw, recurringRaw, notes] = cols
+        // FIX 1: Use proper CSV parser instead of naive split(',')
+        const cols = parseCSVLine(line)
+        const [propNameRaw, typeRaw, amountRaw, dateRaw, recurringRaw, notes] = cols
         const rowNum = idx + 2; const rowErrors = []
-        const matchedProp = propByName(propNameRaw || '')
-        if (!propNameRaw) rowErrors.push('Property name missing')
-        else if (!matchedProp) rowErrors.push(`Property "${propNameRaw}" not found in Proflet`)
+
+        // FIX 3: Property is optional — portfolio-level expenses have no property
+        const matchedProp = propNameRaw ? propByName(propNameRaw) : null
+        if (propNameRaw && !matchedProp) {
+          rowErrors.push(`Property "${propNameRaw}" not found in Proflet`)
+        }
+        // (blank property name is fine — it just means a portfolio-level expense)
+
         const amount = parseFloat(amountRaw)
         if (!amountRaw || isNaN(amount) || amount <= 0) rowErrors.push('Invalid amount')
+
         const date = parseDate(dateRaw)
         if (!date) rowErrors.push('Invalid date — use DD/MM/YYYY')
-        const validTypes = [...expenseTypes]
-        const cleanType = type || 'Other'
-        if (!validTypes.includes(cleanType)) rowErrors.push(`Unknown type "${cleanType}" — will use "Other"`)
+
+        // FIX 2: Case-insensitive type match
+        const resolvedType = matchType(typeRaw)
+        if (typeRaw && !resolvedType) {
+          rowErrors.push(`Unknown type "${typeRaw}" — will use "Other"`)
+        }
+        const finalType = resolvedType || 'Other'
+
         const recurringVal = (recurringRaw || '').toLowerCase().trim()
         const isRecurring = recurringVal === 'yes' || recurringVal === 'monthly' || recurringVal === 'true'
+
         if (rowErrors.length) {
           errors.push({ row: rowNum, errors: rowErrors, raw: line })
         } else {
-          rows.push({ property_id: matchedProp.id, property_name: matchedProp.name, type: validTypes.includes(cleanType) ? cleanType : 'Other', amount, date, recurring: isRecurring, notes: notes || null, user_id: session.user.id })
+          rows.push({
+            property_id: matchedProp ? matchedProp.id : null,
+            property_name: matchedProp ? matchedProp.name : '(Portfolio)',
+            type: finalType,
+            amount,
+            date,
+            recurring: isRecurring,
+            notes: notes || null,
+            user_id: session.user.id
+          })
         }
       })
       setImportRows(rows); setImportErrors(errors)
@@ -304,7 +359,7 @@ export default function Expenses({ session, expenses, props, reload }) {
                 <div className="pf-import-step-num">2</div>
                 <div className="pf-import-step-body">
                   <div className="pf-import-step-title">Upload your completed CSV</div>
-                  <div className="pf-import-step-desc">Recurring column accepts: <strong>yes</strong> or <strong>no</strong></div>
+                  <div className="pf-import-step-desc">Property name is optional for portfolio-level costs (bank fees, legal, etc). Recurring column accepts: <strong>yes</strong> or <strong>no</strong></div>
                   <input ref={fileRef} type="file" accept=".csv" onChange={handleFile} style={{ display: 'none' }} />
                   <button onClick={() => fileRef.current.click()} className="pf-cta pf-cta-ghost pf-cta-sm" style={{ marginTop: '10px' }}>↑ Choose file</button>
                 </div>
