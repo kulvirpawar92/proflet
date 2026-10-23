@@ -6,6 +6,8 @@ import Dashboard from './components/Dashboard'
 import Paywall from './components/Paywall'
 import Success from './components/Success'
 import ResetPassword from './components/ResetPassword'
+import Privacy from './components/Privacy'
+import Terms from './components/Terms'
 
 // Spinner shown while session / subscription is loading
 function Loader() {
@@ -42,6 +44,8 @@ export default function App() {
   // Special routes that don't need auth — render immediately
   if (path === '/reset-password') return <ResetPassword />
   if (path === '/success' || search.includes('session_id')) return <Success />
+  if (path === '/privacy') return <Privacy />
+  if (path === '/terms') return <Terms />
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
