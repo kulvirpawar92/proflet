@@ -515,8 +515,8 @@ function Testimonials() {
 
 function FAQ() {
   const faqs = [
-    { q: 'How does payment work?', a: 'You pay £19 up front for a full year of access. That\u2019s it — no monthly billing, no per-property fees, no add-ons.' },
-    { q: 'What if I want a refund?', a: 'If Proflet isn\u2019t for you, email us within 30 days of paying and we\u2019ll refund you in full, no questions asked.' },
+    { q: 'How does payment work?', a: 'You pay £19 up front for a full year of access. That’s it — no monthly billing, no per-property fees, no add-ons.' },
+    { q: 'What if I want a refund?', a: 'If Proflet isn’t for you, email us within 30 days of paying and we’ll refund you in full, no questions asked.' },
     { q: 'Is my data secure?', a: 'Yes. Your data is stored in an encrypted database, never shared with third parties, and only accessible with your login.' },
     { q: 'Can I use it on my phone?', a: 'Yes — it works on any device through your browser. A dedicated mobile app is coming soon.' },
     { q: 'Can I cancel anytime?', a: 'Yes. No contracts, no cancellation fees. Cancel from your account settings in under a minute.' },
@@ -589,10 +589,10 @@ function Footer() {
     <footer className="pl-footer">
       <div className="pl-footer-inner">
         <div className="pl-footer-brand"><Wordmark size={26} /></div>
-        <div className="pl-footer-text">Built for UK landlords · © 2026 Proflet Ltd.</div>
+        <div className="pl-footer-text">Built for UK landlords · © 2026 Proflet</div>
         <div className="pl-footer-links">
-          <a href="#">Privacy</a>
-          <a href="#">Terms</a>
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms</a>
           <a href="mailto:hello@proflet.com">Contact</a>
         </div>
       </div>
