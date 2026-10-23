@@ -148,9 +148,10 @@ export default function Properties({ session, props, expenses, income, cases, ta
       const d = daysUntil(detailProp.remortgage_date)
       if (d !== null && d <= 90) alerts.push({ tone: d <= 14 ? 'red' : 'amber', msg: 'Remortgage date', detail: fmtDate(detailProp.remortgage_date) })
     }
+    // Rent review date — reminder starts 60 days (2 months) before, as required by Renters' Rights Act
     if (detailProp.tenancy_end) {
       const d = daysUntil(detailProp.tenancy_end)
-      if (d !== null && d <= 60) alerts.push({ tone: d <= 0 ? 'red' : 'amber', msg: 'Tenancy ending', detail: fmtDate(detailProp.tenancy_end) })
+      if (d !== null && d <= 60) alerts.push({ tone: d <= 0 ? 'red' : 'amber', msg: 'Rent review due', detail: fmtDate(detailProp.tenancy_end) })
     }
 
     return (
@@ -216,9 +217,9 @@ export default function Properties({ session, props, expenses, income, cases, ta
             </div>
             <div className="pl-prop-card">
               <SectionHead>Tenancy snapshot</SectionHead>
-              <DetailRow label="Monthly rent"    value={detailProp.monthly_rent ? money(detailProp.monthly_rent) : null} />
-              <DetailRow label="Tenancy start"   value={fmtDate(detailProp.tenancy_start)} />
-              <DetailRow label="Tenancy end"     value={fmtDate(detailProp.tenancy_end)} />
+              <DetailRow label="Monthly rent"      value={detailProp.monthly_rent ? money(detailProp.monthly_rent) : null} />
+              <DetailRow label="Tenancy start"     value={fmtDate(detailProp.tenancy_start)} />
+              <DetailRow label="Rent review date"  value={fmtDate(detailProp.tenancy_end)} />
               <SectionHead>Mortgage snapshot</SectionHead>
               <DetailRow label="Lender"          value={detailProp.mortgage_lender} />
               <DetailRow label="Balance"         value={detailProp.mortgage_balance ? money(detailProp.mortgage_balance) : null} />
@@ -310,15 +311,18 @@ export default function Properties({ session, props, expenses, income, cases, ta
           <div className="pl-prop-grid-2">
             <div className="pl-prop-card">
               <SectionHead>Tenancy details</SectionHead>
-              <DetailRow label="Occupancy status" value={detailProp.occupancy_status} />
-              <DetailRow label="Monthly rent"     value={detailProp.monthly_rent ? money(detailProp.monthly_rent) : null} />
-              <DetailRow label="Annual rent"      value={detailProp.monthly_rent ? money(detailProp.monthly_rent * 12) : null} />
-              <DetailRow label="Tenancy start"    value={fmtDate(detailProp.tenancy_start)} />
-              <DetailRow label="Tenancy end"      value={fmtDate(detailProp.tenancy_end)} />
+              <DetailRow label="Occupancy status"  value={detailProp.occupancy_status} />
+              <DetailRow label="Monthly rent"      value={detailProp.monthly_rent ? money(detailProp.monthly_rent) : null} />
+              <DetailRow label="Annual rent"       value={detailProp.monthly_rent ? money(detailProp.monthly_rent * 12) : null} />
+              <DetailRow label="Tenancy start"     value={fmtDate(detailProp.tenancy_start)} />
+              <DetailRow label="Rent review date"  value={fmtDate(detailProp.tenancy_end)} />
               {detailProp.tenancy_end && (() => {
                 const d = daysUntil(detailProp.tenancy_end)
-                const tone = d <= 30 ? 'amber' : 'green'
-                return <div className={`pl-prop-callout pl-prop-callout-${tone}`}>{d <= 0 ? 'Tenancy has ended' : `${d} days until tenancy ends`}</div>
+                const tone = d <= 0 ? 'red' : d <= 60 ? 'amber' : 'green'
+                const msg = d <= 0
+                  ? 'Rent review date has passed — consider serving a Section 13 notice'
+                  : `${d} days until rent review — ${d <= 60 ? '2-month notice period required' : 'reminder starts at 60 days'}`
+                return <div className={`pl-prop-callout pl-prop-callout-${tone}`}>{msg}</div>
               })()}
             </div>
             <div className="pl-prop-card">
@@ -399,7 +403,7 @@ export default function Properties({ session, props, expenses, income, cases, ta
                   </select>
                 </Field>
                 <Field label="Tenancy start"><input type="date" value={form.tenancy_start || ''} onChange={f('tenancy_start')} className="pl-prop-input" /></Field>
-                <Field label="Tenancy end"><input type="date" value={form.tenancy_end || ''} onChange={f('tenancy_end')} className="pl-prop-input" /></Field>
+                <Field label="Rent review date"><input type="date" value={form.tenancy_end || ''} onChange={f('tenancy_end')} className="pl-prop-input" /></Field>
               </div>
             )}
             {formTab === 'mortgage' && (
