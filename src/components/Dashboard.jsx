@@ -87,8 +87,16 @@ function Segment({ options, current, onChange }) {
   )
 }
 
+// Read/write active tab from sessionStorage so it survives browser tab switches
+function getInitialPage() {
+  try { return sessionStorage.getItem('pf_page') || 'dashboard' } catch { return 'dashboard' }
+}
+function savePage(p) {
+  try { sessionStorage.setItem('pf_page', p) } catch {}
+}
+
 export default function Dashboard({ session }) {
-  const [page, setPage] = useState('dashboard')
+  const [page, setPage] = useState(getInitialPage)
   const [props, setProps] = useState([])
   const [income, setIncome] = useState([])
   const [expenses, setExpenses] = useState([])
@@ -99,6 +107,9 @@ export default function Dashboard({ session }) {
   const [profitView, setProfitView] = useState('chart')
   const [equityView, setEquityView] = useState('release')
   const [generating, setGenerating] = useState(false)
+
+  // Persist active tab across browser tab switches
+  function navigate(p) { setPage(p); savePage(p) }
 
   useEffect(() => { loadAll() }, [])
 
@@ -149,19 +160,24 @@ export default function Dashboard({ session }) {
     setGenerating(false)
   }
 
+  // FIX: Monthly expenses for a property = sum of ALL recurring expenses for that property
+  // (not just ones dated this month — recurring means they apply every month regardless
+  // of whether a record has been generated yet for the current month)
   function calcProp(p) {
     const val = p.current_value || 0
     const mort = p.mortgage_balance || 0
     const rent = p.monthly_rent || 0
-    const now = new Date()
-    const currentKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+
+    // Sum all recurring expenses for this property — these are the ongoing monthly costs
     const mExp = expenses
-      .filter(e => e.property_id === p.id && e.recurring && e.date && e.date.startsWith(currentKey))
+      .filter(e => e.property_id === p.id && e.recurring)
       .reduce((s, e) => s + (e.amount || 0), 0)
+
     const equity = val - mort
     const ltv = val ? Math.round(mort / val * 100) : 0
     const equityRelease = Math.max(0, (val * 0.75) - mort)
     const monthlyProfit = rent - mExp
+    // FIX: Gross yield = annual rent / current value × 100
     const grossYield = val ? parseFloat((rent * 12 / val * 100).toFixed(1)) : 0
     return { val, mort, rent, mExp, equity, ltv, equityRelease, monthlyProfit, grossYield }
   }
@@ -176,8 +192,10 @@ export default function Dashboard({ session }) {
     }
   }, { val: 0, mort: 0, equity: 0, rent: 0, exp: 0, profit: 0, er: 0 })
 
-  const avgYield = props.length
-    ? (props.reduce((s, p) => s + calcProp(p).grossYield, 0) / props.length).toFixed(1)
+  // FIX: Portfolio gross yield = total annual rent / total portfolio value
+  // (not an average of individual yields, which is skewed by small high-yield properties)
+  const portfolioYield = totals.val
+    ? parseFloat((totals.rent * 12 / totals.val * 100).toFixed(1))
     : 0
 
   const healthScore = () => {
@@ -266,6 +284,8 @@ export default function Dashboard({ session }) {
       d.setMonth(d.getMonth() + i)
       months.push({
         month: d.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' }),
+        // Uses totals.rent (monthly_rent from properties) minus totals.exp (sum of recurring expenses)
+        // — gives a stable forward projection based on property setup, not historical records
         Projected: Math.round(totals.rent - totals.exp)
       })
     }
@@ -355,7 +375,7 @@ export default function Dashboard({ session }) {
             {navItems.map(n => (
               <button
                 key={n}
-                onClick={() => setPage(n)}
+                onClick={() => navigate(n)}
                 className={`pf-nav-tab ${page === n ? 'pf-active' : ''}`}
               >
                 {n}
@@ -409,7 +429,7 @@ export default function Dashboard({ session }) {
               <MetricCard label="Portfolio value" value={fmt(totals.val)} sub={`${props.length} propert${props.length === 1 ? 'y' : 'ies'}`} />
               <MetricCard label="Total equity" value={fmt(totals.equity)} sub={`Avg LTV ${totals.val ? Math.round(totals.mort / totals.val * 100) : 0}%`} />
               <MetricCard label="Net monthly profit" value={fmt(totals.profit)} sub={`${fmt(totals.profit * 12)} per year`} accent="mid" highlight deltaUp />
-              <MetricCard label="Avg gross yield" value={avgYield + '%'} sub="Annual rent / value" accent={parseFloat(avgYield) >= 5 ? 'mid' : 'amber'} />
+              <MetricCard label="Portfolio gross yield" value={portfolioYield + '%'} sub="Annual rent ÷ portfolio value" accent={portfolioYield >= 5 ? 'mid' : 'amber'} />
             </div>
 
             <div className="pf-metric-grid pf-metric-grid-2">
