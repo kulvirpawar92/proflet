@@ -138,6 +138,14 @@ export default function Auth({ onBack }) {
             {loading ? 'Please wait...' : isSignUp ? 'Create account' : 'Sign in'}
           </button>
         </form>
+        {isSignUp && (
+          <div style={{ textAlign: 'center', marginTop: '1rem', fontSize: '12px', color: '#999', lineHeight: '1.5' }}>
+            By creating an account you agree to our{' '}
+            <a href="/terms" style={{ color: '#3B6D11', textDecoration: 'none' }}>Terms &amp; Conditions</a>
+            {' '}and{' '}
+            <a href="/privacy" style={{ color: '#3B6D11', textDecoration: 'none' }}>Privacy Policy</a>
+          </div>
+        )}
         <div style={{ textAlign: 'center', marginTop: '1.25rem', fontSize: '13px', color: '#666' }}>
           {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
           <span onClick={() => setIsSignUp(!isSignUp)} style={{ color: '#3B6D11', cursor: 'pointer', fontWeight: '500' }}>
