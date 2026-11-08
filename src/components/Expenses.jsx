@@ -346,7 +346,7 @@ export default function Expenses({ session, expenses, props, reload }) {
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
               </button>
             </div>
-            <div style={{ padding: '0 1.75rem 1.25rem' }}>
+            <div style={{ padding: '0 1.75rem 1.25rem', overflowY: 'auto', flex: '1 1 auto' }}>
               <div className="pf-import-step">
                 <div className="pf-import-step-num">1</div>
                 <div className="pf-import-step-body">
@@ -424,6 +424,7 @@ export default function Expenses({ session, expenses, props, reload }) {
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
               </button>
             </div>
+            <div style={{ padding: '0 1.75rem', overflowY: 'auto', flex: '1 1 auto' }}>
             <div className="pf-form-grid">
               <Field label="Property" required full>
                 <div className="pf-select-wrap">
@@ -462,7 +463,7 @@ export default function Expenses({ session, expenses, props, reload }) {
               </Field>
             </div>
             {form.property_id && form.amount && (
-              <div className="pf-preview">
+              <div className="pf-preview" style={{ marginBottom: '1.25rem' }}>
                 <div className="pf-preview-pill">Preview</div>
                 <div className="pf-preview-line">
                   <span className="pf-preview-prop">{propName(form.property_id)}</span>
@@ -476,6 +477,7 @@ export default function Expenses({ session, expenses, props, reload }) {
                 </div>
               </div>
             )}
+            </div>
             <div className="pf-modal-foot">
               <button className="pf-cta pf-cta-ghost" onClick={() => setShowForm(false)}>Cancel</button>
               <button className="pf-cta pf-cta-primary" onClick={save} disabled={saving}>
@@ -624,9 +626,9 @@ function Styles() {
 .pf-empty-sub { font-size: 13px; color: var(--pl-muted); }
 
 .pf-modal-backdrop { position: fixed; inset: 0; background: color-mix(in oklab, #07140A 70%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 1rem; z-index: 1000; animation: pf-fade .2s ease both; }
-.pf-modal { position: relative; background: var(--pl-bg-2); border: 1px solid var(--pl-border-2); border-radius: 22px; padding: 1.75rem; width: 100%; max-width: 540px; box-shadow: var(--pl-shadow-3); overflow: hidden; animation: pf-pop .25s ease both; }
+.pf-modal { position: relative; background: var(--pl-bg-2); border: 1px solid var(--pl-border-2); border-radius: 22px; padding: 0; width: 100%; max-width: 540px; max-height: calc(100vh - 2rem); display: flex; flex-direction: column; box-shadow: var(--pl-shadow-3); overflow: hidden; animation: pf-pop .25s ease both; }
 .pf-modal-glow { position: absolute; inset: 0; background: radial-gradient(ellipse 80% 40% at 50% 0%, color-mix(in oklab, var(--pl-bright) 18%, transparent), transparent 70%); pointer-events: none; }
-.pf-modal-head { position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 1.5rem; }
+.pf-modal-head { position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 1.5rem; flex: 0 0 auto; padding: 1.75rem 1.75rem 0; }
 .pf-modal-title { font-family: Georgia, serif; font-size: 22px; font-weight: 500; color: var(--pl-text); letter-spacing: -0.015em; margin: 0; }
 .pf-modal-close { width: 30px; height: 30px; border-radius: 50%; background: var(--pl-bg-3); border: 1px solid var(--pl-border); color: var(--pl-text-2); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: color .18s, background .18s, border-color .18s; flex-shrink: 0; }
 .pf-modal-close:hover { color: var(--pl-text); background: var(--pl-light); border-color: var(--pl-light-b); }
@@ -647,7 +649,7 @@ function Styles() {
 .pf-preview-type { font-family: ui-monospace, monospace; font-size: 12px; color: var(--pl-text-2); }
 .pf-preview-amount { font-family: Georgia, serif; font-weight: 500; color: var(--pl-mid); }
 .pf-preview-sep { color: var(--pl-muted); opacity: .6; }
-.pf-modal-foot { position: relative; display: flex; justify-content: flex-end; gap: 10px; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--pl-border); }
+.pf-modal-foot { position: relative; display: flex; justify-content: flex-end; gap: 10px; margin-top: 0; padding: 1.25rem 1.75rem 1.75rem; border-top: 1px solid var(--pl-border); flex: 0 0 auto; }
 
 .pf-import-step { display: flex; gap: 14px; margin-bottom: 1.25rem; align-items: flex-start; }
 .pf-import-step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--pl-light); border: 1px solid var(--pl-light-b); color: var(--pl-mid); display: flex; align-items: center; justify-content: center; font-family: ui-monospace, monospace; font-size: 12px; font-weight: 500; flex-shrink: 0; margin-top: 2px; }
