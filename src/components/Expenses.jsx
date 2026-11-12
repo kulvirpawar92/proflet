@@ -48,7 +48,17 @@ export default function Expenses({ session, expenses, props, reload }) {
   }, [showImport])
 
   const total = expenses.reduce((s, e) => s + (e.amount || 0), 0)
-  const recurring = expenses.filter(e => e.recurring).reduce((s, e) => s + (e.amount || 0), 0)
+  const recurring = (() => {
+    const seen = new Map()
+    expenses
+      .filter(e => e.recurring)
+      .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
+      .forEach(e => {
+        const key = `${e.property_id}|${e.type}`
+        if (!seen.has(key)) seen.set(key, e.amount || 0)
+      })
+    return Array.from(seen.values()).reduce((s, v) => s + v, 0)
+  })()
   const propName = (id) => props.find(p => p.id === id)?.name || '—'
   const propByName = (name) => props.find(p => p.name.toLowerCase().trim() === name.toLowerCase().trim())
 
