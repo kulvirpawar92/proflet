@@ -249,7 +249,7 @@ export default function Dashboard({ session }) {
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
       const label = d.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' })
       const monthIncome = income
-        .filter(inc => inc.date && inc.date.startsWith(key) && inc.status === 'received')
+        .filter(inc => inc.date && inc.date.startsWith(key) && inc.status?.toLowerCase() === 'received')
         .reduce((s, inc) => s + (inc.amount || 0), 0)
       const monthExpenses = expenses
         .filter(exp => exp.date && exp.date.startsWith(key))
@@ -467,8 +467,8 @@ export default function Dashboard({ session }) {
                     <YAxis tick={{ fontSize: 10, fill: C.muted, fontFamily: 'Georgia, serif' }} axisLine={false} tickLine={false} tickFormatter={v => '£' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)} />
                     <Tooltip content={customTooltip} cursor={{ fill: 'rgba(99,153,34,0.06)' }} />
                     <Legend wrapperStyle={{ fontSize: '11px', fontFamily: 'Georgia, serif', paddingTop: '8px' }} iconType="circle" iconSize={8} />
-                    <Bar dataKey="Income" fill={C.mid} radius={[3, 3, 0, 0]} />
-                    <Bar dataKey="Expenses" fill={C.lightBorder} radius={[3, 3, 0, 0]} />
+                    <Bar dataKey="Income" fill={C.bright} radius={[3, 3, 0, 0]} />
+                    <Bar dataKey="Expenses" fill="#D97706" radius={[3, 3, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </Card>
