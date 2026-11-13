@@ -540,17 +540,20 @@ export default function Dashboard({ session }) {
                   <Segment current={equityView} onChange={setEquityView} options={[{ value: 'release', label: 'Release' }, { value: 'breakdown', label: 'Breakdown' }]} />
                 }>Equity & mortgage per property</SectionTitle>
                 {!props.length ? <EmptyState>No properties yet</EmptyState> : equityView === 'release' ? (
+                  <>
+                  <div className="pf-alerts-caption" style={{marginBottom:'0.75rem'}}>Equity you hold · Equity releasable at 75% LTV</div>
                   <ResponsiveContainer width="100%" height={220}>
-                    <BarChart data={equityChartData} layout="vertical" barSize={18}>
+                    <BarChart data={equityChartData} layout="vertical" barSize={14} barGap={3} barCategoryGap="30%">
                       <CartesianGrid strokeDasharray="3 3" stroke={C.border} horizontal={false} />
                       <XAxis type="number" tick={{ fontSize: 10, fill: C.muted, fontFamily: 'Georgia, serif' }} axisLine={false} tickLine={false} tickFormatter={v => '£' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)} />
                       <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: C.muted, fontFamily: 'Georgia, serif' }} axisLine={false} tickLine={false} width={90} />
                       <Tooltip content={customTooltip} cursor={{ fill: 'rgba(99,153,34,0.06)' }} />
                       <Legend wrapperStyle={{ fontSize: '11px', fontFamily: 'Georgia, serif', paddingTop: '8px' }} iconType="circle" iconSize={8} />
-                      <Bar dataKey="Equity" stackId="a" fill={C.mid} />
-                      <Bar dataKey="Equity Release" stackId="b" fill={C.bright} radius={[0, 4, 4, 0]} />
+                      <Bar dataKey="Equity" fill={C.mid} radius={[0, 4, 4, 0]} label={{ position: 'right', fontSize: 10, fill: C.muted, fontFamily: 'ui-monospace,monospace', formatter: v => v > 0 ? '£' + (v/1000).toFixed(0) + 'k' : '' }} />
+                      <Bar dataKey="Equity Release" fill="#3B82F6" radius={[0, 4, 4, 0]} label={{ position: 'right', fontSize: 10, fill: C.muted, fontFamily: 'ui-monospace,monospace', formatter: v => v > 0 ? '£' + (v/1000).toFixed(0) + 'k' : '' }} />
                     </BarChart>
                   </ResponsiveContainer>
+                  </>
                 ) : (
                   <div className="pf-table">
                     <div className="pf-table-head"><span>Property</span><span>Value</span><span>Mortgage</span><span>LTV</span></div>
