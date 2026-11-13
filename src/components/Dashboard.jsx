@@ -168,10 +168,18 @@ export default function Dashboard({ session }) {
     const mort = p.mortgage_balance || 0
     const rent = p.monthly_rent || 0
 
-    // Sum all recurring expenses for this property — these are the ongoing monthly costs
-    const mExp = expenses
-      .filter(e => e.property_id === p.id && e.recurring)
-      .reduce((s, e) => s + (e.amount || 0), 0)
+    // Deduplicate recurring expenses by type — take the most recent record per type
+    // (avoids summing 12 months of historical records as if they're 12× the monthly cost)
+    const mExp = (() => {
+      const seen = new Map()
+      expenses
+        .filter(e => e.property_id === p.id && e.recurring)
+        .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
+        .forEach(e => {
+          if (!seen.has(e.type)) seen.set(e.type, e.amount || 0)
+        })
+      return Array.from(seen.values()).reduce((s, v) => s + v, 0)
+    })()
 
     const equity = val - mort
     const ltv = val ? Math.round(mort / val * 100) : 0
