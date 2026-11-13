@@ -550,7 +550,7 @@ export default function Dashboard({ session }) {
                       <Tooltip content={customTooltip} cursor={{ fill: 'rgba(99,153,34,0.06)' }} />
                       <Legend wrapperStyle={{ fontSize: '11px', fontFamily: 'Georgia, serif', paddingTop: '8px' }} iconType="circle" iconSize={8} />
                       <Bar dataKey="Equity" fill={C.mid} radius={[0, 4, 4, 0]} label={{ position: 'right', fontSize: 10, fill: C.muted, fontFamily: 'ui-monospace,monospace', formatter: v => v > 0 ? '£' + (v/1000).toFixed(0) + 'k' : '' }} />
-                      <Bar dataKey="Equity Release" fill="#3B82F6" radius={[0, 4, 4, 0]} label={{ position: 'right', fontSize: 10, fill: C.muted, fontFamily: 'ui-monospace,monospace', formatter: v => v > 0 ? '£' + (v/1000).toFixed(0) + 'k' : '' }} />
+                      <Bar dataKey="Equity Release" fill="#C8E6A0" radius={[0, 4, 4, 0]} label={{ position: 'right', fontSize: 10, fill: C.muted, fontFamily: 'ui-monospace,monospace', formatter: v => v > 0 ? '£' + (v/1000).toFixed(0) + 'k' : '' }} />
                     </BarChart>
                   </ResponsiveContainer>
                   </>
@@ -829,4 +829,4 @@ function DashStyles() {
 @media (prefers-reduced-motion: reduce) { .proflet-app *, .proflet-app *::before, .proflet-app *::after { animation: none !important; transition: none !important; } }
     `}</style>
   )
-}
+} 
